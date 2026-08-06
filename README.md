@@ -194,6 +194,32 @@ is no flash of the wrong theme, that each of the four fallback triggers
 actually serves the SVG, that the mobile menu traps focus and restores it on
 Escape, and that the contact form announces its errors.
 
+### Single-file preview
+
+```bash
+npm run build
+npm run preview:single -- preview.html
+```
+
+Packs the whole site into one self-contained HTML file, for showing it
+somewhere that can only host a single page. Every route's markup is inlined
+and swapped by a small router, the fonts are embedded as data URIs, and the
+JavaScript is bundled into one IIFE with the dynamic imports inlined so
+nothing is fetched at runtime.
+
+It is a **preview, not the deployment**. Three things differ from the real
+build, and none of them should be measured for performance:
+
+- Astro's `ClientRouter` is dropped, because it navigates by fetching real
+  URLs. The replacement re-dispatches `astro:page-load`, which is what every
+  component here already listens for, so the wiring re-runs identically.
+- Fonts are embedded rather than served as separate cacheable files.
+- The CSP meta element is stripped: its hashes describe the original chunks,
+  not the rebundled one.
+
+Add `FRAGMENT=1` to emit markup with no `<html>`, `<head>` or `<body>`
+wrapper, for hosts that supply their own document skeleton.
+
 ### Re-subsetting the fonts
 
 Only needed if the design starts using a weight or optical size outside the

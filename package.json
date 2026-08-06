@@ -19,6 +19,7 @@
     "audit:strings": "node scripts/trace-strings.mjs",
     "test:contact": "node scripts/test-contact.mjs",
     "shots": "node scripts/screenshots.mjs",
+    "preview:single": "node scripts/single-file.mjs",
     "fonts": "python3 scripts/subset-fonts.py"
   },
   "dependencies": {
