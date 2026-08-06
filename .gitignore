@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.astro/
+.wrangler/
+
+# Local environment. Real values live in the Cloudflare Pages dashboard.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log

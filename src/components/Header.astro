@@ -1,0 +1,361 @@
+---
+import { nav, features, displayName } from "../content/site";
+import { ui } from "../content/ui";
+import ThemeToggle from "./ThemeToggle.astro";
+
+/**
+ * Persistent header. Condenses on scroll. The mobile menu traps focus and is
+ * fully keyboard operable, including Escape to close and a restored focus
+ * position on the button that opened it.
+ */
+
+// A nav entry pointing at a switched-off route is removed rather than
+// rendered as a dead link.
+const items = nav.filter((item) =>
+  item.href === "/journal" ? features.journal : true,
+);
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) =>
+  href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
+---
+
+<header class="site-header" id="site-header" data-condensed="false">
+  <div class="shell bar">
+    <a href="/" class="logotype" aria-label={ui.header.homeLinkLabel}>
+      {displayName}
+    </a>
+
+    <nav class="desktop-nav" aria-label={ui.siteNavLabel}>
+      <ul>
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isCurrent(item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="controls">
+      <ThemeToggle />
+      <button
+        type="button"
+        id="menu-button"
+        class="menu-button"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        data-label-open={ui.header.openMenu}
+        data-label-close={ui.header.closeMenu}
+        aria-label={ui.header.openMenu}
+      >
+        <span class="bars" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <div
+    class="mobile-menu"
+    id="mobile-menu"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-label={ui.header.menuLabel}
+  >
+    <nav aria-label={ui.header.menuLabel}>
+      <ul>
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                aria-current={isCurrent(item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in oklab, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: var(--hairline) solid var(--rule);
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    /* Condensing is a padding change on a sticky bar, which does not move
+       anything in the document flow, so it cannot contribute to CLS. */
+    padding-block: 1.15rem;
+    transition: padding-block 0.24s var(--ease-out);
+  }
+
+  .site-header[data-condensed="true"] .bar {
+    padding-block: 0.6rem;
+  }
+
+  .logotype {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 14;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    /* Kept on one line, but allowed to shrink and truncate rather than
+       forcing the document wider. Without min-width:0 a flex item refuses to
+       shrink below its content, and a long name silently gives the whole
+       page a horizontal scrollbar on a phone. */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 0 1 auto;
+  }
+
+  .logotype:hover {
+    opacity: 1;
+    color: var(--brass);
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .desktop-nav ul {
+    display: flex;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .desktop-nav a {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .desktop-nav a:hover,
+  .desktop-nav a[aria-current="page"] {
+    color: var(--ink);
+    opacity: 1;
+  }
+
+  .desktop-nav a[aria-current="page"] {
+    box-shadow: inset 0 -1px 0 0 var(--brass);
+  }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    /* Never shrink: these are the two controls that must stay tappable. */
+    flex: 0 0 auto;
+  }
+
+  .menu-button {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* Two rules, matching the hairlines used everywhere else. */
+  .bars,
+  .bars::after {
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: var(--ink);
+    transition: transform 0.24s var(--ease-out);
+  }
+
+  .bars::after {
+    content: "";
+    transform: translateY(5px);
+  }
+
+  .menu-button[aria-expanded="true"] .bars {
+    transform: translateY(0.5px) rotate(45deg);
+  }
+
+  .menu-button[aria-expanded="true"] .bars::after {
+    transform: translateY(0) rotate(-90deg);
+  }
+
+  .mobile-menu {
+    border-top: var(--hairline) solid var(--rule);
+    background: var(--paper);
+  }
+
+  .mobile-menu[hidden] {
+    display: none;
+  }
+
+  .mobile-menu ul {
+    margin: 0;
+    padding: 0.5rem var(--gutter) calc(1.5rem + env(safe-area-inset-bottom));
+    list-style: none;
+  }
+
+  .mobile-menu li + li {
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .mobile-menu a {
+    display: block;
+    padding: 0.95rem 0;
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 24;
+    font-size: 1.375rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .mobile-menu a[aria-current="page"] {
+    color: var(--brass);
+  }
+
+  @media (min-width: 60rem) {
+    .desktop-nav {
+      display: block;
+    }
+    .menu-button {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar,
+    .bars,
+    .bars::after {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const FOCUSABLE =
+    'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function wireHeader() {
+    const header = document.getElementById("site-header");
+    const button = document.getElementById(
+      "menu-button",
+    ) as HTMLButtonElement | null;
+    const menu = document.getElementById("mobile-menu");
+    if (!header || !button || !menu) return;
+
+    /* --- Condense on scroll ------------------------------------------------
+       Uses a sentinel and IntersectionObserver rather than a scroll handler,
+       so nothing runs on the main thread during a scroll. */
+    const sentinel = document.createElement("div");
+    sentinel.setAttribute("aria-hidden", "true");
+    sentinel.style.cssText = "position:absolute;top:0;height:1px;width:1px;";
+    document.body.prepend(sentinel);
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        header.dataset.condensed = String(!entry?.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+    io.observe(sentinel);
+
+    /* --- Mobile menu ------------------------------------------------------- */
+    let open = false;
+
+    const setOpen = (next: boolean) => {
+      open = next;
+      menu.hidden = !next;
+      button.setAttribute("aria-expanded", String(next));
+      const label = next ? button.dataset.labelClose : button.dataset.labelOpen;
+      if (label) button.setAttribute("aria-label", label);
+      // Stop the page behind the menu from scrolling on touch.
+      document.body.style.overflow = next ? "hidden" : "";
+      if (next) {
+        const first = menu.querySelector<HTMLElement>(FOCUSABLE);
+        first?.focus();
+      } else {
+        button.focus();
+      }
+    };
+
+    button.addEventListener("click", () => setOpen(!open));
+
+    // Escape closes, and focus returns to the button that opened it.
+    document.addEventListener("keydown", (event) => {
+      if (!open) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      // Trap: cycle within the menu plus the button that controls it.
+      const items = [
+        button,
+        ...Array.from(menu.querySelectorAll<HTMLElement>(FOCUSABLE)),
+      ];
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (!first || !last) return;
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+
+    // A menu left open across a view transition would trap focus on a page
+    // that no longer shows it.
+    document.addEventListener("astro:before-swap", () => {
+      if (open) {
+        open = false;
+        document.body.style.overflow = "";
+      }
+      io.disconnect();
+      sentinel.remove();
+    });
+  }
+
+  // astro:page-load fires on the FIRST load as well as after every view
+  // transition, so this is the only hook needed. Calling wireHeader()
+  // directly here as well would bind every handler twice, and a single
+  // click would then fire both copies.
+  document.addEventListener("astro:page-load", wireHeader);
+</script>

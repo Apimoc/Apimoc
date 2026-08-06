@@ -1,0 +1,442 @@
+---
+import Page from "../layouts/Page.astro";
+import EmailLink from "../components/EmailLink.astro";
+import { contact, isPlaceholder } from "../content/site";
+import { ui } from "../content/ui";
+
+const hasLinkedIn = !isPlaceholder(contact.linkedin);
+const hasEmail = !isPlaceholder(contact.emailUser);
+
+// Supplied as a Cloudflare Pages environment variable. Public by design:
+// the Turnstile SITE key is meant to be in the page. The SECRET key is read
+// only inside the Pages Function and never reaches the browser.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+
+const title = "Contact";
+---
+
+<Page
+  title={title}
+  heading={title}
+  description="Get in touch by email or through the form."
+>
+  <section class="band" aria-label={title}>
+    <div class="shell layout">
+      <form id="contact-form" class="form" novalidate>
+        {/* Announced when validation fails. Focus moves here so a keyboard
+            or screen reader user is told what to fix. */}
+        <div
+          class="errors"
+          id="error-summary"
+          role="alert"
+          tabindex="-1"
+          hidden
+        >
+          <p class="t-caption">{ui.contact.errorSummaryHeading}</p>
+          <ul></ul>
+        </div>
+
+        <div class="field">
+          <label for="name">{ui.contact.nameLabel}</label>
+          <input id="name" name="name" type="text" autocomplete="name" required />
+          <p class="error" id="name-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="email">{ui.contact.emailLabel}</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+          <p class="error" id="email-error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="org">
+            {ui.contact.orgLabel}
+            <span class="optional">{ui.contact.orgOptional}</span>
+          </label>
+          <input id="org" name="org" type="text" autocomplete="organization" />
+        </div>
+
+        <div class="field">
+          <label for="message">{ui.contact.messageLabel}</label>
+          <textarea id="message" name="message" rows="7" required></textarea>
+          <p class="error" id="message-error" hidden></p>
+        </div>
+
+        {/* Honeypot. Hidden from sight AND from assistive technology, so no
+            real user is ever asked to skip it. */}
+        <div class="hp" aria-hidden="true">
+          <label for="company-website">{ui.contact.honeypotLabel}</label>
+          <input
+            id="company-website"
+            name="company_website"
+            type="text"
+            tabindex="-1"
+            autocomplete="off"
+          />
+        </div>
+
+        {turnstileSiteKey && (
+          <div
+            class="cf-turnstile"
+            data-sitekey={turnstileSiteKey}
+            data-theme="auto"
+          >
+          </div>
+        )}
+        <p class="error" id="turnstile-error" hidden></p>
+
+        <button type="submit" class="submit" data-idle={ui.contact.submit} data-busy={ui.contact.submitting}>
+          {ui.contact.submit}
+        </button>
+
+        <div class="sent" id="sent" role="status" hidden>
+          <p class="t-h3">{ui.contact.success.heading}</p>
+          <p>{ui.contact.success.body}</p>
+        </div>
+      </form>
+
+      <aside class="direct">
+        <h2 class="t-caption">{ui.contact.directHeading}</h2>
+        <ul>
+          {hasEmail && (
+            <li>
+              <EmailLink />
+            </li>
+          )}
+          {hasLinkedIn && (
+            <li>
+              <a href={contact.linkedin} rel="me noopener noreferrer" target="_blank">
+                {ui.footer.linkedinLabel}
+              </a>
+            </li>
+          )}
+        </ul>
+      </aside>
+    </div>
+  </section>
+</Page>
+
+{
+  turnstileSiteKey && (
+    <script
+      is:inline
+      async
+      defer
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    />
+  )
+}
+
+<style>
+  .layout {
+    display: grid;
+    gap: 3rem;
+    align-items: start;
+  }
+
+  .form {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 34rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  /* Persistent visible labels. Placeholder-only labeling is a failure, so
+     there are no placeholder attributes on this form at all. */
+  label {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .optional {
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 0.5rem;
+    /* No opacity here. --ink-muted is already close to the AA floor (5.84:1
+       on paper-raised), and knocking it back to 80% pushed it under 4.5:1.
+       Anything that needs to recede must use a token, not transparency. */
+  }
+
+  input,
+  textarea {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    color: var(--ink);
+    background: var(--paper-raised);
+    /* An operable boundary, so --line-ui rather than --rule. In dark mode
+       umber measures 1.41:1 and would fail here. */
+    border: var(--hairline) solid var(--line-ui);
+    padding: 0.7rem 0.8rem;
+    min-height: 48px;
+    width: 100%;
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+  }
+
+  input[aria-invalid="true"],
+  textarea[aria-invalid="true"] {
+    border-color: var(--brass);
+    border-width: 2px;
+  }
+
+  .error {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .error[hidden] {
+    display: none;
+  }
+
+  .errors {
+    border: var(--hairline) solid var(--line-ui);
+    padding: 1rem;
+  }
+
+  .errors[hidden] {
+    display: none;
+  }
+
+  .errors p {
+    margin: 0 0 0.5rem;
+    color: var(--ink);
+  }
+
+  .errors ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.9375rem;
+  }
+
+  .hp {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .submit {
+    justify-self: start;
+    min-height: 48px;
+    padding: 0 1.6rem;
+    background: var(--brass);
+    color: var(--paper);
+    border: var(--hairline) solid var(--brass);
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .submit:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .submit[disabled] {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .sent {
+    border-top: var(--hairline) solid var(--brass);
+    padding-top: 1.25rem;
+  }
+
+  .sent[hidden] {
+    display: none;
+  }
+
+  .sent p {
+    margin: 0 0 0.5rem;
+  }
+
+  .direct ul {
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .direct li {
+    padding-block: 0.85rem;
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  @media (min-width: 56rem) {
+    .layout {
+      grid-template-columns: minmax(0, 34rem) 1fr;
+      gap: 4rem;
+    }
+  }
+</style>
+
+<script>
+  import { ui } from "../content/ui";
+
+  interface FieldSpec {
+    id: string;
+    validate: (value: string) => string | null;
+  }
+
+  function wireForm() {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    if (!form) return;
+
+    const summary = document.getElementById("error-summary");
+    const summaryList = summary?.querySelector("ul");
+    const sent = document.getElementById("sent");
+    const submit = form.querySelector<HTMLButtonElement>(".submit");
+
+    const fields: FieldSpec[] = [
+      {
+        id: "name",
+        validate: (v) => (v.trim() ? null : ui.contact.errors.nameRequired),
+      },
+      {
+        id: "email",
+        validate: (v) => {
+          if (!v.trim()) return ui.contact.errors.emailRequired;
+          // Deliberately permissive. Server-side validation is the real gate.
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+            ? null
+            : ui.contact.errors.emailInvalid;
+        },
+      },
+      {
+        id: "message",
+        validate: (v) => {
+          const t = v.trim();
+          if (!t) return ui.contact.errors.messageRequired;
+          if (t.length < 20) return ui.contact.errors.messageTooShort;
+          if (t.length > 4000) return ui.contact.errors.messageTooLong;
+          return null;
+        },
+      },
+    ];
+
+    const showError = (id: string, message: string | null) => {
+      const input = document.getElementById(id) as HTMLInputElement | null;
+      const slot = document.getElementById(`${id}-error`);
+      if (!input || !slot) return;
+
+      if (message) {
+        slot.textContent = message;
+        slot.hidden = false;
+        input.setAttribute("aria-invalid", "true");
+        // Programmatically associated, so it is announced on focus.
+        input.setAttribute("aria-describedby", `${id}-error`);
+      } else {
+        slot.hidden = true;
+        slot.textContent = "";
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-describedby");
+      }
+    };
+
+    const setSummary = (messages: { id: string; text: string }[]) => {
+      if (!summary || !summaryList) return;
+      summaryList.innerHTML = "";
+      messages.forEach(({ id, text }) => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `#${id}`;
+        link.textContent = text;
+        li.appendChild(link);
+        summaryList.appendChild(li);
+      });
+      summary.hidden = messages.length === 0;
+      if (messages.length > 0) summary.focus();
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const problems: { id: string; text: string }[] = [];
+      fields.forEach(({ id, validate }) => {
+        const input = document.getElementById(id) as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | null;
+        const message = validate(input?.value ?? "");
+        showError(id, message);
+        if (message) problems.push({ id, text: message });
+      });
+
+      if (problems.length > 0) {
+        setSummary(problems);
+        return;
+      }
+      setSummary([]);
+
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = submit.dataset.busy ?? "";
+      }
+
+      const payload = new FormData(form);
+
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          body: payload,
+        });
+
+        if (response.ok) {
+          form.querySelectorAll("input, textarea").forEach((el) => {
+            (el as HTMLInputElement).value = "";
+          });
+          if (sent) sent.hidden = false;
+          if (submit) submit.hidden = true;
+          return;
+        }
+
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: keyof typeof ui.contact.errors;
+        };
+        const key = body.error ?? "server";
+        setSummary([
+          {
+            id: "message",
+            text: ui.contact.errors[key] ?? ui.contact.errors.server,
+          },
+        ]);
+      } catch {
+        setSummary([{ id: "message", text: ui.contact.errors.network }]);
+      } finally {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = submit.dataset.idle ?? "";
+        }
+      }
+    });
+  }
+
+  // astro:page-load fires on the FIRST load as well as after every view
+  // transition, so this is the only hook needed. Calling wireForm()
+  // directly here as well would bind every handler twice, and a single
+  // click would then fire both copies.
+  document.addEventListener("astro:page-load", wireForm);
+</script>

@@ -1,0 +1,116 @@
+---
+import { buildStack } from "../lib/stack-layout";
+import { occupancy } from "../content/site";
+
+/**
+ * The designed fallback, not an afterthought.
+ *
+ * An SVG occupancy grid with the same lattice, the same corner notch and the
+ * same label as the 3D stack. Revealed in CSS, arriving already largely lit
+ * so it never reads as a progress bar. Served whenever WebGL is unavailable,
+ * reduced motion is set, saveData is on, or the device reports little memory.
+ *
+ * It is also what every visitor sees first: the 3D island only replaces it
+ * once the main thread is idle, so this markup carries the LCP-adjacent paint
+ * and must look finished on its own.
+ */
+
+const stack = buildStack();
+
+// Isometric-ish plan: a flat elevation grid, drawn with hairlines to match
+// the rules used everywhere else on the site.
+const cell = 14;
+const gap = 3;
+const pitch = cell + gap;
+const width = stack.cols * pitch - gap;
+const height = stack.rows * pitch - gap;
+---
+
+<div class="fallback" data-stack-fallback>
+  {/* No width/height attributes: the viewBox plus preserveAspectRatio lets
+      the lattice fit whatever box it is given, at any stack proportion.
+      Setting them makes a tall stack overflow a wide container. */}
+  <svg
+    viewBox={`0 0 ${width} ${height}`}
+    role="img"
+    aria-label={occupancy.textEquivalent}
+    preserveAspectRatio="xMidYMid meet"
+  >
+    {
+      stack.units.map((unit) => (
+        <rect
+          x={unit.col * pitch}
+          y={(stack.rows - 1 - unit.row) * pitch}
+          width={cell}
+          height={cell}
+          class:list={["unit", unit.lit ? "lit" : "dark"]}
+          style={`--i:${unit.index}`}
+        />
+      ))
+    }
+  </svg>
+</div>
+
+<style>
+  .fallback {
+    width: 100%;
+    display: grid;
+    place-items: center;
+  }
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .unit {
+    /* Hairline outline, matching the rules elsewhere. Decorative, so --rule
+       is correct here rather than --line-ui. */
+    stroke: var(--rule);
+    stroke-width: 0.5;
+    fill: none;
+  }
+
+  .unit.lit {
+    fill: var(--brass);
+    /* Warm interior. Kept subtle so the lattice reads as an architectural
+       model rather than a chart. */
+    fill-opacity: 0.9;
+    stroke: var(--brass);
+  }
+
+  .unit.dark {
+    fill: var(--paper-raised);
+  }
+
+  /* A reveal, not a fill. Every unit is already present and lit; they resolve
+     into place together over a short window with a slight positional offset,
+     so at no point does the grid look like it is loading. */
+  @media (prefers-reduced-motion: no-preference) {
+    .unit {
+      opacity: 0;
+      animation: settle 0.5s var(--ease-out) forwards;
+      /* Offset by position, capped, so the whole thing lands inside the
+         1.2s budget however many units there are. */
+      animation-delay: calc(min(var(--i) * 4ms, 700ms));
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(3px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .unit {
+      opacity: 1;
+      animation: none;
+    }
+  }
+</style>

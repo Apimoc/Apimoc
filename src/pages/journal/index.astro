@@ -1,0 +1,214 @@
+---
+import { getCollection } from "astro:content";
+import Page from "../../layouts/Page.astro";
+import { features } from "../../content/site";
+import { ui } from "../../content/ui";
+import { formatDateLong, isoDate } from "../../lib/format";
+
+/**
+ * A dated ruled list, like a log. Not a card grid.
+ *
+ * No tag pills, no reading time, no excerpt cards, no cover images. The tag
+ * filter is a row of small text toggles that works without JavaScript by
+ * falling back to showing everything.
+ */
+
+const posts = (await getCollection("journal", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime(),
+);
+
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
+
+const title = "Journal";
+---
+
+<Page
+  title={title}
+  heading={title}
+  description="Notes on compliance, lease-up and running sites."
+  prose
+  noindex={!features.journal}
+>
+  <section class="band" aria-label={title}>
+    <div class="shell">
+      {posts.length === 0 ? (
+        <p class="empty">{ui.journal.empty}</p>
+      ) : (
+        <>
+          {tags.length > 0 && (
+            <div class="filter" role="group" aria-label={ui.journal.filterLabel}>
+              <button type="button" class="tag" data-tag="*" aria-pressed="true">
+                {ui.journal.allTags}
+              </button>
+              {tags.map((tag) => (
+                <button type="button" class="tag" data-tag={tag} aria-pressed="false">
+                  {tag}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div class="log" data-reveal="rows">
+            {posts.map((post) => (
+              <article class="entry" data-tags={post.data.tags.join(" ")}>
+                <a class="hit" href={`/journal/${post.id}`}>
+                  <time class="date t-figure" datetime={isoDate(post.data.pubDate)}>
+                    {formatDateLong(post.data.pubDate)}
+                  </time>
+                  <h2 class="t-h3 title">{post.data.title}</h2>
+                  <p class="desc">{post.data.description}</p>
+                </a>
+              </article>
+            ))}
+          </div>
+
+          <p class="none" hidden data-empty-filtered>{ui.journal.emptyFiltered}</p>
+        </>
+      )}
+
+      <p class="feed">
+        <a href="/journal/rss.xml">{ui.journal.rssLabel}</a>
+      </p>
+    </div>
+  </section>
+</Page>
+
+<style>
+  /* Small text toggles, not pills. */
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .tag {
+    background: none;
+    border: 0;
+    padding: 0.25rem 0;
+    min-height: 24px;
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .tag[aria-pressed="true"] {
+    color: var(--ink);
+    box-shadow: inset 0 -1px 0 0 var(--brass);
+  }
+
+  .log {
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .entry {
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  .entry[hidden] {
+    display: none;
+  }
+
+  .hit {
+    display: grid;
+    gap: 0.35rem;
+    padding-block: 1.4rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .hit:hover {
+    opacity: 1;
+  }
+
+  .hit:hover .title {
+    color: var(--brass);
+  }
+
+  .date {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .title {
+    margin: 0;
+    transition: color 0.18s var(--ease-out);
+  }
+
+  .desc {
+    margin: 0;
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+
+  .empty,
+  .none {
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  .none[hidden] {
+    display: none;
+  }
+
+  .feed {
+    margin-top: 2.5rem;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .feed a {
+    text-decoration: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .title {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  function wireFilter() {
+    const buttons = document.querySelectorAll<HTMLButtonElement>(".tag");
+    const entries = document.querySelectorAll<HTMLElement>(".entry[data-tags]");
+    const noneMessage = document.querySelector<HTMLElement>(
+      "[data-empty-filtered]",
+    );
+    if (!buttons.length) return;
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const tag = button.dataset.tag ?? "*";
+
+        buttons.forEach((other) =>
+          other.setAttribute("aria-pressed", String(other === button)),
+        );
+
+        let shown = 0;
+        entries.forEach((entry) => {
+          const tags = (entry.dataset.tags ?? "").split(" ").filter(Boolean);
+          const show = tag === "*" || tags.includes(tag);
+          entry.hidden = !show;
+          if (show) shown += 1;
+        });
+
+        if (noneMessage) noneMessage.hidden = shown > 0;
+      });
+    });
+  }
+
+  // astro:page-load fires on the FIRST load as well as after every view
+  // transition, so this is the only hook needed. Calling wireFilter()
+  // directly here as well would bind every handler twice, and a single
+  // click would then fire both copies.
+  document.addEventListener("astro:page-load", wireFilter);
+</script>

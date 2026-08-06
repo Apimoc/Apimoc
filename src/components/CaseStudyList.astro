@@ -1,0 +1,104 @@
+---
+import { getCollection } from "astro:content";
+import { ui } from "../content/ui";
+import { byOrderThenDate } from "../lib/format";
+
+interface Props {
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+
+/**
+ * Case studies as ruled entries, one per row, in a single column.
+ *
+ * Three cards side by side is the generic answer. The three-part structure
+ * itself is not generic, it is how this work is actually assessed, so it
+ * survives inside each case study as a file jacket. The index is just a list.
+ */
+
+const all = await getCollection("work", ({ data }) => !data.draft);
+const items = all.sort(byOrderThenDate).slice(0, limit ?? all.length);
+---
+
+{
+  items.length === 0 ? (
+    <p class="empty">{ui.work.empty}</p>
+  ) : (
+    <div class="list" data-reveal="rows">
+      {items.map((item) => (
+        <article class="entry">
+          <a class="hit" href={`/work/${item.id}`}>
+            <h3 class="t-h3 title">{item.data.title}</h3>
+            <p class="summary">{item.data.summary}</p>
+            {item.data.metrics.length > 0 && (
+              <p class="metrics t-figure">
+                {item.data.metrics
+                  .map((m) => `${m.value} ${m.label.toLowerCase()}`)
+                  .join("  ·  ")}
+              </p>
+            )}
+          </a>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .list {
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .entry {
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  /* The whole row is the target, so there is no small "read more" link to
+     hit on a phone. */
+  .hit {
+    display: grid;
+    gap: 0.4rem;
+    padding-block: 1.4rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .hit:hover {
+    opacity: 1;
+  }
+
+  .hit:hover .title {
+    color: var(--brass);
+  }
+
+  .title {
+    margin: 0;
+    transition: color 0.18s var(--ease-out);
+  }
+
+  .summary {
+    margin: 0;
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+
+  .metrics {
+    margin: 0.3rem 0 0;
+    font-size: var(--text-caption);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .empty {
+    color: var(--ink-muted);
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .title {
+      transition: none;
+    }
+  }
+</style>

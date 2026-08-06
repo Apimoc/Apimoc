@@ -1,0 +1,131 @@
+---
+import { getCollection, render } from "astro:content";
+import Page from "../layouts/Page.astro";
+import CareerSpine from "../components/CareerSpine.astro";
+import { assets, identity, isPlaceholder } from "../content/site";
+import { ui } from "../content/ui";
+import { formatPeriod, byOrderThenDate } from "../lib/format";
+
+const roles = (
+  await getCollection("experience", ({ data }) => !data.draft)
+).sort(byOrderThenDate);
+
+const bodies = await Promise.all(
+  roles.map(async (role) => ({ role, Content: (await render(role)).Content })),
+);
+
+const title = "Experience";
+const jobTitle = isPlaceholder(identity.jobTitle) ? "" : identity.jobTitle;
+---
+
+<Page
+  title={title}
+  heading={title}
+  description={`Roles, unit counts and programs. ${jobTitle}`.trim()}
+>
+  <section class="band" aria-label={title}>
+    <div class="shell">
+      <CareerSpine />
+
+      {assets.cvReady && (
+        <p class="download">
+          <a class="button" href={assets.cv} download>{ui.cta.downloadCv}</a>
+        </p>
+      )}
+
+      <div class="detail">
+        {bodies.map(({ role, Content }) => (
+          <article class="role" data-reveal="block">
+            <p class="t-caption period">
+              {formatPeriod(role.data.startDate, role.data.endDate)}
+              {role.data.location ? ` · ${role.data.location}` : ""}
+            </p>
+            <h2 class="t-h3">{role.data.title}</h2>
+            <p class="org">{role.data.org}</p>
+
+            {role.data.bullets.length > 0 && (
+              <ul>
+                {role.data.bullets.map((line) => (
+                  <li>{line}</li>
+                ))}
+              </ul>
+            )}
+
+            <div class="body measure">
+              <Content />
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Page>
+
+<style>
+  .download {
+    margin: 2.5rem 0 0;
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    padding: 0 1.4rem;
+    border: var(--hairline) solid var(--line-ui);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .button:hover {
+    opacity: 1;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .detail {
+    margin-top: clamp(3rem, 7vw, 5rem);
+  }
+
+  .role {
+    padding-top: 2rem;
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .role + .role {
+    margin-top: 2.5rem;
+  }
+
+  .period {
+    margin: 0 0 0.5rem;
+  }
+
+  .org {
+    margin: 0.2rem 0 0;
+    color: var(--ink-muted);
+    font-size: var(--text-caption);
+  }
+
+  ul {
+    margin: 1.25rem 0 0;
+    padding-left: 1.1rem;
+    max-width: var(--measure);
+  }
+
+  li + li {
+    margin-top: 0.5rem;
+  }
+
+  .body {
+    margin-top: 1rem;
+    color: var(--ink-muted);
+  }
+
+  .body :global(p) {
+    margin: 0 0 1rem;
+  }
+</style>

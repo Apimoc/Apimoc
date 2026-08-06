@@ -1,0 +1,192 @@
+---
+import type { GetStaticPaths } from "astro";
+import { getCollection, render } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import { ui } from "../../content/ui";
+import { byOrderThenDate } from "../../lib/format";
+import "../../styles/prose.css";
+
+export const getStaticPaths = (async () => {
+  const items = await getCollection("work", ({ data }) => !data.draft);
+  return items.map((item) => ({ params: { slug: item.id }, props: { item } }));
+}) satisfies GetStaticPaths;
+
+const { item } = Astro.props;
+const { Content } = await render(item);
+
+/**
+ * The file jacket: a metrics block at the head that reads like an audit
+ * summary line, then the narrative beneath, in one column. Not three cards
+ * side by side.
+ */
+
+const all = (await getCollection("work", ({ data }) => !data.draft)).sort(
+  byOrderThenDate,
+);
+const index = all.findIndex((entry) => entry.id === item.id);
+const previous = index > 0 ? all[index - 1] : undefined;
+const next = index >= 0 && index < all.length - 1 ? all[index + 1] : undefined;
+---
+
+<Base title={item.data.title} description={item.data.summary} prose>
+  <article class="jacket">
+    <div class="shell">
+      <p class="back">
+        <a href="/work">{ui.cta.backToWork}</a>
+      </p>
+
+      <h1 class="t-h2 title" data-reveal="lines">{item.data.title}</h1>
+      <p class="summary measure" data-reveal="block">{item.data.summary}</p>
+
+      {item.data.metrics.length > 0 && (
+        <dl class="metrics t-figure" aria-label={ui.work.metrics}>
+          {item.data.metrics.map((metric) => (
+            <div>
+              <dt>{metric.value}</dt>
+              <dd>{metric.label}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <div class="three" data-reveal="block">
+        <section>
+          <h2 class="t-caption">{ui.work.situation}</h2>
+          <p>{item.data.situation}</p>
+        </section>
+        <section>
+          <h2 class="t-caption">{ui.work.action}</h2>
+          <p>{item.data.action}</p>
+        </section>
+        <section>
+          <h2 class="t-caption">{ui.work.outcome}</h2>
+          <p>{item.data.outcome}</p>
+        </section>
+      </div>
+
+      <div class="prose narrative" data-reveal="block">
+        <Content />
+      </div>
+
+      <nav class="pager" aria-label={ui.cta.backToWork}>
+        {previous ? (
+          <a href={`/work/${previous.id}`} rel="prev">
+            {ui.cta.previous}
+          </a>
+        ) : (
+          <span></span>
+        )}
+        {next && (
+          <a href={`/work/${next.id}`} rel="next" class="next">
+            {ui.cta.next}
+          </a>
+        )}
+      </nav>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .jacket {
+    padding-block: clamp(2rem, 6vw, 3.5rem) 0;
+  }
+
+  .back {
+    margin: 0 0 2.5rem;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .back a {
+    text-decoration: none;
+  }
+
+  .back a::before {
+    content: "← ";
+  }
+
+  .title {
+    max-width: 22ch;
+  }
+
+  .summary {
+    margin: 1.25rem 0 0;
+    font-size: 1.125rem;
+    color: var(--ink-muted);
+  }
+
+  /* The audit summary line. Ruled, tabular, no cards. */
+  .metrics {
+    margin: 2.5rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    border-top: var(--hairline) solid var(--rule);
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  .metrics > div {
+    padding: 1rem 1.25rem 1.1rem;
+    border-left: var(--hairline) solid var(--rule);
+  }
+
+  .metrics > div:first-child {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .metrics dt {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .metrics dd {
+    margin: 0.35rem 0 0;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .three {
+    margin-top: 3rem;
+    display: grid;
+    gap: 2rem;
+    max-width: var(--measure);
+  }
+
+  .three h2 {
+    margin: 0 0 0.5rem;
+  }
+
+  .three p {
+    margin: 0;
+  }
+
+  .narrative {
+    margin-top: 3rem;
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 1.25rem;
+    border-top: var(--hairline) solid var(--rule);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .pager a {
+    text-decoration: none;
+  }
+
+  .next {
+    margin-left: auto;
+  }
+</style>

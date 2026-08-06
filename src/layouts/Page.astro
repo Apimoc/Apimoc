@@ -1,0 +1,44 @@
+---
+import Base from "./Base.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** The large display line at the top of the page. */
+  heading: string;
+  /** Optional line under the heading. */
+  standfirst?: string;
+  prose?: boolean;
+  noindex?: boolean;
+}
+
+const { title, description, heading, standfirst, prose, noindex } = Astro.props;
+---
+
+<Base title={title} description={description} prose={prose} noindex={noindex}>
+  <header class="page-head">
+    <div class="shell">
+      <h1 class="t-display" data-reveal="lines">{heading}</h1>
+      {standfirst && (
+        <p class="standfirst measure" data-reveal="block">{standfirst}</p>
+      )}
+    </div>
+  </header>
+  <slot />
+</Base>
+
+<style>
+  .page-head {
+    padding-block: clamp(2.5rem, 7vw, 4.5rem) clamp(2rem, 5vw, 3rem);
+  }
+
+  .page-head h1 {
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    margin: 1.5rem 0 0;
+    font-size: 1.125rem;
+    color: var(--ink-muted);
+  }
+</style>

@@ -1,0 +1,60 @@
+---
+import Base from "../layouts/Base.astro";
+import { ui } from "../content/ui";
+
+/**
+ * Designed, not default. It uses the same ruled language as the rest of the
+ * site: the code is set as a figure, the way every other number here is.
+ */
+---
+
+<Base title={ui.notFound.heading} noindex>
+  <section class="band notfound" aria-label={ui.notFound.heading}>
+    <div class="shell">
+      <p class="code t-figure">{ui.notFound.code}</p>
+      <h1 class="t-display">{ui.notFound.heading}</h1>
+      <p class="body measure">{ui.notFound.body}</p>
+      <p class="more">
+        <a href="/">{ui.cta.home}</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: clamp(3rem, 10vw, 7rem);
+  }
+
+  .code {
+    margin: 0 0 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: var(--hairline) solid var(--brass);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    color: var(--ink-muted);
+    max-width: var(--measure);
+  }
+
+  .body {
+    margin: 1.5rem 0 0;
+    color: var(--ink-muted);
+    font-size: 1.125rem;
+  }
+
+  .more {
+    margin: 2rem 0 0;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .more a {
+    text-decoration: none;
+  }
+
+  .more a::after {
+    content: " →";
+  }
+</style>

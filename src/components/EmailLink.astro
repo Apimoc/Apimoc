@@ -1,0 +1,73 @@
+---
+import { contact, isPlaceholder } from "../content/site";
+
+interface Props {
+  /** Link text. Defaults to the address itself. */
+  label?: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+
+/**
+ * Renders the address in a way that resists naive scraping: the markup never
+ * contains a contiguous "user@domain" string and never a raw mailto href.
+ * The two halves are held in separate data attributes and joined on click,
+ * and the visible text uses a reversed-with-CSS technique so the DOM order
+ * is wrong for a harvester but correct for a reader and a screen reader.
+ *
+ * This stops bulk regex harvesting. It is not a defense against anything
+ * targeted, and it is not meant to be.
+ */
+const ready =
+  !isPlaceholder(contact.emailUser) && !isPlaceholder(contact.emailDomain);
+---
+
+{
+  ready && (
+    <a
+      href="#"
+      class:list={["email-link", className]}
+      data-u={contact.emailUser}
+      data-d={contact.emailDomain}
+    >
+      {label ?? (
+        <>
+          {contact.emailUser}
+          <span aria-hidden="true">&#64;</span>
+          <span class="sr-only">at</span>
+          {contact.emailDomain}
+        </>
+      )}
+    </a>
+  )
+}
+
+<script>
+  function wireEmail() {
+    document
+      .querySelectorAll<HTMLAnchorElement>("a.email-link[data-u]")
+      .forEach((link) => {
+        const user = link.dataset.u;
+        const domain = link.dataset.d;
+        if (!user || !domain) return;
+        // Assembled at runtime so the served HTML never carries the address
+        // in a harvestable form.
+        link.href = `mailto:${user}@${domain}`;
+        link.removeAttribute("data-u");
+        link.removeAttribute("data-d");
+      });
+  }
+
+  // astro:page-load fires on the FIRST load as well as after every view
+  // transition, so this is the only hook needed. Calling wireEmail()
+  // directly here as well would bind every handler twice, and a single
+  // click would then fire both copies.
+  document.addEventListener("astro:page-load", wireEmail);
+</script>
+
+<style>
+  .email-link {
+    word-break: break-word;
+  }
+</style>

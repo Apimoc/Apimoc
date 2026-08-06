@@ -1,0 +1,53 @@
+---
+import { getCollection, render } from "astro:content";
+import Page from "../layouts/Page.astro";
+import Portrait from "../components/Portrait.astro";
+
+/**
+ * The About page reads from the same home/about.mdx entry, so there is one
+ * place to write the narrative rather than two that drift.
+ */
+const entries = await getCollection("home");
+const about = entries.find((entry) => entry.data.section === "about");
+const Content = about ? (await render(about)).Content : null;
+---
+
+<Page
+  title="About"
+  heading="About"
+  description="How I work, and what I take on."
+>
+  <section class="band" aria-label="About">
+    <div class="shell layout">
+      <div class="portrait-slot" data-reveal="block">
+        <Portrait />
+      </div>
+      <div class="copy measure" data-reveal="block">
+        {Content && <Content />}
+      </div>
+    </div>
+  </section>
+</Page>
+
+<style>
+  .layout {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .copy :global(p) {
+    margin: 0 0 1.15rem;
+  }
+
+  .copy :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .layout {
+      grid-template-columns: 16rem 1fr;
+      gap: 3.5rem;
+    }
+  }
+</style>

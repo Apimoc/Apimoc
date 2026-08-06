@@ -1,0 +1,70 @@
+---
+import { Image } from "astro:assets";
+import { assets, isPlaceholder } from "../content/site";
+import { ui } from "../content/ui";
+
+/**
+ * The portrait, through Astro's image pipeline: AVIF with a WebP fallback,
+ * explicit width and height so it reserves its own space, and an LQIP
+ * placeholder.
+ *
+ * Until a file exists at public/images/portrait.jpg, this renders a ruled
+ * plate at the correct aspect ratio rather than a broken image. That keeps
+ * the layout honest while the site is being filled in, and it means dropping
+ * the real file in later shifts nothing on the page.
+ */
+
+const alt = isPlaceholder(assets.portraitAlt) ? "" : assets.portraitAlt;
+
+// Discovered at build time so a missing file is a designed state, not a 404.
+let portrait: ImageMetadata | null = null;
+if (assets.portraitReady) {
+  const found = import.meta.glob<{ default: ImageMetadata }>(
+    "/src/assets/portrait.{jpg,jpeg,png,avif,webp}",
+    { eager: true },
+  );
+  const first = Object.values(found)[0];
+  portrait = first?.default ?? null;
+}
+---
+
+{
+  portrait ? (
+    <Image
+      src={portrait}
+      alt={alt}
+      widths={[224, 448, 672]}
+      sizes="(min-width: 48rem) 14rem, 100vw"
+      loading="lazy"
+      decoding="async"
+      class="portrait"
+    />
+  ) : (
+    <div class="portrait plate" role="presentation">
+      <span class="hint t-caption">{ui.placeholder.badge}</span>
+    </div>
+  )
+}
+
+<style>
+  .portrait {
+    width: 100%;
+    max-width: 14rem;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+  }
+
+  .plate {
+    border: var(--hairline) solid var(--rule);
+    background: var(--paper-raised);
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .hint {
+    color: var(--ink-muted);
+  }
+</style>

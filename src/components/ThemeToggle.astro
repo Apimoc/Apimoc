@@ -1,0 +1,111 @@
+---
+import { ui } from "../content/ui";
+
+/**
+ * The toggle is a single unit volume, lit or unlit. Same metaphor and same
+ * geometry as the Occupancy Stack, rather than the sun and moon that every
+ * generated site reaches for.
+ *
+ * It is a real button with aria-pressed, a 44px target, and a screen reader
+ * label that says what pressing it will do.
+ */
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class="toggle"
+  aria-pressed="false"
+  aria-label={ui.theme.toDark}
+  data-label-to-dark={ui.theme.toDark}
+  data-label-to-light={ui.theme.toLight}
+>
+  <span class="unit" aria-hidden="true"></span>
+</button>
+
+<style>
+  .toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* One unit volume, drawn in the same isometric language as the stack. */
+  .unit {
+    display: block;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--line-ui);
+    background: transparent;
+    transition:
+      background-color 0.24s var(--ease-out),
+      box-shadow 0.24s var(--ease-out);
+  }
+
+  /* Lit: the theme currently in use is the one shown as occupied. */
+  :global([data-theme="dark"]) .unit {
+    background: var(--brass);
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--brass) 22%, transparent);
+  }
+
+  .toggle:hover .unit {
+    border-color: var(--brass);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .unit {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { THEME_STORAGE_KEY } from "../lib/theme-script.js";
+
+  function sync(button: HTMLButtonElement) {
+    const dark = document.documentElement.dataset.theme === "dark";
+    button.setAttribute("aria-pressed", String(dark));
+    const label = dark
+      ? button.dataset.labelToLight
+      : button.dataset.labelToDark;
+    if (label) button.setAttribute("aria-label", label);
+  }
+
+  function apply(dark: boolean) {
+    const root = document.documentElement;
+    root.dataset.theme = dark ? "dark" : "light";
+    root.style.colorScheme = dark ? "dark" : "light";
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, dark ? "dark" : "light");
+    } catch {
+      // Private browsing with storage disabled. The toggle still works for
+      // this page view, it just will not be remembered.
+    }
+  }
+
+  function wire() {
+    const button = document.getElementById(
+      "theme-toggle",
+    ) as HTMLButtonElement | null;
+    if (!button) return;
+    sync(button);
+    button.addEventListener("click", () => {
+      apply(document.documentElement.dataset.theme !== "dark");
+      sync(button);
+      document.dispatchEvent(new CustomEvent("themechange"));
+    });
+  }
+
+  // astro:page-load fires on the FIRST load as well as after every view
+  // transition, so this is the only hook needed. Calling wire()
+  // directly here as well would bind every handler twice, and a single
+  // click would then fire both copies.
+  // View transitions swap the body, so the listener has to be reattached.
+  document.addEventListener("astro:page-load", wire);
+</script>

@@ -1,0 +1,236 @@
+---
+import { getCollection, render } from "astro:content";
+import Base from "../layouts/Base.astro";
+import Band from "../components/Band.astro";
+import RentRollStrip from "../components/RentRollStrip.astro";
+import CareerSpine from "../components/CareerSpine.astro";
+import CaseStudyList from "../components/CaseStudyList.astro";
+import OccupancyStackMount from "../components/OccupancyStackMount.astro";
+import EmailLink from "../components/EmailLink.astro";
+import Portrait from "../components/Portrait.astro";
+import { activeHomeSections } from "../content/theme";
+import { identity, assets, contact, isPlaceholder } from "../content/site";
+import { ui, fill } from "../content/ui";
+
+/**
+ * The home page is composed from the array in src/content/theme.ts. Reorder
+ * that array and this page reorders. Remove an entry and the section
+ * disappears without leaving a gap, because every band owns its own spacing
+ * and rule.
+ */
+
+const sections = await getCollection("home");
+const bySection = new Map(sections.map((entry) => [entry.data.section, entry]));
+
+const hero = bySection.get("hero");
+const rentRoll = bySection.get("rentRoll");
+const aboutEntry = bySection.get("about");
+const contactEntry = bySection.get("contact");
+
+const AboutBody = aboutEntry ? (await render(aboutEntry)).Content : null;
+const ContactBody = contactEntry ? (await render(contactEntry)).Content : null;
+
+const ctaName = isPlaceholder(identity.shortName) ? "" : identity.shortName;
+const hasEmail = !isPlaceholder(contact.emailUser);
+---
+
+<Base>
+  {
+    activeHomeSections.map((section) => {
+      switch (section.id) {
+        /* ---------------------------------------------------------------
+           HERO
+           The LCP element is the headline text, never the canvas. Both CTAs
+           sit above the fold on a phone: a recruiter reaches her in two taps.
+           --------------------------------------------------------------- */
+        case "hero":
+          return (
+            <section class="band hero" aria-label={hero?.data.headline ?? undefined}>
+              <div class="shell">
+                <h1 class="t-display headline" data-reveal="lines">
+                  {hero?.data.headline}
+                </h1>
+                {hero?.data.standfirst && (
+                  <p class="standfirst measure" data-reveal="block">
+                    {hero.data.standfirst}
+                  </p>
+                )}
+
+                <div class="stack-slot" data-reveal="block">
+                  <OccupancyStackMount />
+                </div>
+
+                <div class="cta" data-reveal="block">
+                  {hasEmail && (
+                    <EmailLink
+                      class="button primary"
+                      label={fill(ui.cta.email, { NAME: ctaName }).trim()}
+                    />
+                  )}
+                  {assets.cvReady && (
+                    <a class="button" href={assets.cv} download>
+                      {ui.cta.downloadCv}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </section>
+          );
+
+        case "rentRoll":
+          return (
+            <Band label={ui.rentRoll.regionLabel}>
+              <RentRollStrip
+                figures={rentRoll?.data.figures ?? []}
+                note={rentRoll?.data.figuresNote}
+              />
+            </Band>
+          );
+
+        case "careerSpine":
+          return (
+            <Band heading={section.heading}>
+              <CareerSpine limit={3} />
+              <p class="more">
+                <a href="/experience">{ui.cta.fullCv}</a>
+              </p>
+            </Band>
+          );
+
+        case "caseStudies":
+          return (
+            <Band heading={section.heading}>
+              <CaseStudyList limit={3} />
+              <p class="more">
+                <a href="/work">{ui.cta.allCaseStudies}</a>
+              </p>
+            </Band>
+          );
+
+        case "about":
+          return (
+            <Band heading={section.heading}>
+              <div class="about">
+                <Portrait />
+                <div class="about-copy measure" data-reveal="block">
+                  {AboutBody && <AboutBody />}
+                  <p class="more">
+                    <a href="/about">{ui.cta.moreAbout}</a>
+                  </p>
+                </div>
+              </div>
+            </Band>
+          );
+
+        case "contact":
+          return (
+            <Band heading={section.heading}>
+              <div class="measure" data-reveal="block">
+                {ContactBody && <ContactBody />}
+                <p class="more">
+                  <a href="/contact">{ui.cta.email.replace("%NAME%", ctaName).trim()}</a>
+                </p>
+              </div>
+            </Band>
+          );
+
+        default:
+          return null;
+      }
+    })
+  }
+</Base>
+
+<style>
+  .hero {
+    padding-top: clamp(2.5rem, 7vw, 5rem);
+  }
+
+  .headline {
+    max-width: 22ch;
+  }
+
+  .standfirst {
+    margin: 1.75rem 0 0;
+    font-size: 1.125rem;
+    color: var(--ink-muted);
+  }
+
+  .stack-slot {
+    margin: clamp(2.5rem, 6vw, 4rem) 0 clamp(2rem, 5vw, 3rem);
+  }
+
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  /* Buttons are ruled rectangles, consistent with everything else. No
+     radius, no shadow, no gradient. */
+  .cta :global(.button) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 1.4rem;
+    border: var(--hairline) solid var(--line-ui);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    transition:
+      background-color 0.18s var(--ease-out),
+      color 0.18s var(--ease-out);
+  }
+
+  .cta :global(.button.primary) {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--paper);
+  }
+
+  .cta :global(.button:hover) {
+    opacity: 1;
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .about {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .more {
+    margin: 1.5rem 0 0;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .more :global(a) {
+    text-decoration: none;
+  }
+
+  .more :global(a::after) {
+    content: " →";
+  }
+
+  @media (min-width: 48rem) {
+    .about {
+      grid-template-columns: 14rem 1fr;
+      gap: 3rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cta :global(.button) {
+      transition: none;
+    }
+  }
+</style>

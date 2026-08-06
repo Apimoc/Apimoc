@@ -1,0 +1,106 @@
+/* ==========================================================================
+   TOKENS
+   The only file in this codebase permitted to contain a hex color value.
+   Every color used anywhere else must reference one of these variables.
+
+   Contrast ratios below are measured, not asserted. See CONTENT.md before
+   changing any value: several of these pairs sit close to the WCAG AA
+   threshold and a small nudge can push them under.
+   ========================================================================== */
+
+:root {
+  /* --- Light theme -------------------------------------------------------
+     Token          Ratio on --paper   Ratio on --paper-raised
+     --ink              13.06:1              14.27:1
+     --ink-muted         5.35:1               5.84:1
+     --brass             5.07:1               5.54:1
+     --umber             9.22:1              10.07:1
+     ---------------------------------------------------------------------- */
+  --paper: #efe8da; /* warm parchment page ground */
+  --paper-raised: #f7f2e8; /* cards, journal body */
+  --ink: #2a2019; /* primary text, never pure black */
+  --ink-muted: #6b5b4a; /* secondary text */
+  --brass: #7e5b18; /* links, accent, focus rings */
+  --umber: #4a3728; /* rules, borders */
+
+  /* Role split. --rule is decorative only. --line-ui carries any boundary a
+     user must see in order to operate the interface: form field borders,
+     checkbox outlines, focus rings. In light theme both resolve to umber. */
+  --rule: var(--umber);
+  --line-ui: var(--umber);
+
+  /* --- Type scale ------------------------------------------------------- */
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
+  --font-prose: "Literata", Georgia, "Times New Roman", serif;
+
+  --text-display: clamp(2.75rem, 7vw, 5.5rem);
+  --text-h2: clamp(1.75rem, 3.5vw, 2.5rem);
+  --text-h3: 1.25rem;
+  --text-body: 1.0625rem;
+  --text-prose: 1.125rem;
+  --text-caption: 0.8125rem;
+
+  --leading-display: 1.02;
+  --leading-h2: 1.1;
+  --leading-body: 1.65;
+  --leading-prose: 1.75;
+
+  --tracking-display: -0.03em;
+  --tracking-h2: -0.02em;
+  --tracking-caption: 0.06em;
+
+  /* --- Measure and rhythm ----------------------------------------------- */
+  --measure: 68ch;
+  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --band-y: clamp(3.5rem, 8vw, 7rem);
+  --hairline: 1px;
+
+  /* --- Motion ------------------------------------------------------------
+     One reveal language. Do not add per-section variants. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-reveal: 0.7s;
+  --dur-swap: 0.28s;
+  --stagger: 0.05s;
+}
+
+[data-theme="dark"] {
+  /* --- Dark theme --------------------------------------------------------
+     Token          Ratio on --paper   Ratio on --paper-raised
+     --ink              14.63:1              13.51:1
+     --ink-muted         6.23:1               5.75:1
+     --brass             7.69:1               7.10:1
+     --umber             1.41:1               1.31:1   <-- decorative ONLY
+     ---------------------------------------------------------------------- */
+  --paper: #17120e; /* espresso, never pure black */
+  --paper-raised: #211a14;
+  --ink: #ede3d2;
+  --ink-muted: #a3937e;
+  --brass: #c9a227;
+  --umber: #3a2e24;
+
+  --rule: var(--umber);
+  /* umber measures 1.41:1 here and fails the 3:1 non-text requirement.
+     WCAG 2.2 SC 1.4.11 exempts purely decorative hairlines, so --rule may
+     keep it, but anything a user must see to operate resolves to ink-muted
+     at 6.23:1 instead. Do not point --line-ui back at umber. */
+  --line-ui: var(--ink-muted);
+}
+
+/* Tailwind 4 CSS-first config. Exposes the tokens as utility classes
+   (bg-paper, text-ink-muted, border-line-ui and so on) without duplicating
+   any literal value. */
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-brass: var(--brass);
+  --color-umber: var(--umber);
+  --color-rule: var(--rule);
+  --color-line-ui: var(--line-ui);
+
+  --font-display: var(--font-display);
+  --font-sans: var(--font-sans);
+  --font-prose: var(--font-prose);
+}

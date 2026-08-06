@@ -1,0 +1,149 @@
+---
+import { ClientRouter } from "astro:transitions";
+import "../styles/global.css";
+import { themeInitScript } from "../lib/theme-script.js";
+import {
+  seo,
+  siteUrl,
+  siteUrlIsReal,
+  features,
+  isPlaceholder,
+} from "../content/site";
+import { ui } from "../content/ui";
+import { lightTokens, darkTokens } from "../lib/tokens";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import PersonSchema from "../components/PersonSchema.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Set on the journal so Literata is only requested there. */
+  prose?: boolean;
+  /** Keeps a route out of search results. */
+  noindex?: boolean;
+  /** Adds BlogPosting JSON-LD instead of the default Person. */
+  articleSchema?: string;
+}
+
+const {
+  title,
+  description,
+  prose = false,
+  noindex = false,
+  articleSchema,
+} = Astro.props;
+
+const pageTitle = title
+  ? seo.titleTemplate.replace("%s", title)
+  : seo.defaultTitle;
+const pageDescription = description ?? seo.defaultDescription;
+const canonical = new URL(Astro.url.pathname, siteUrl).href;
+
+/* Each page's OG card is generated at build time under a slug mirroring the
+   route, so /journal/foo uses /og/journal/foo.png. Anything without its own
+   card falls back to the default. */
+const slug = Astro.url.pathname.replace(/^\/|\/$/g, "");
+const ogSlug = slug === "" ? "default" : slug;
+const ogImage = new URL(`/og/${ogSlug}.png`, siteUrl).href;
+
+// Until the real domain is set, absolute URLs are wrong, so nothing gets
+// indexed by accident.
+const blockIndexing = noindex || !siteUrlIsReal;
+---
+
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+    {/* Runs before the first paint, so the wrong theme is never shown.
+        Hashed into the CSP from the same source string. */}
+    <script is:inline set:html={themeInitScript} />
+
+    {/* The lattice motif again, so the tab icon is the same object as the
+        hero and the theme toggle. The .ico is there so the browser's implicit
+        /favicon.ico request resolves instead of logging a 404. */}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <title>{pageTitle}</title>
+    {!isPlaceholder(pageDescription) && (
+      <meta name="description" content={pageDescription} />
+    )}
+    <link rel="canonical" href={canonical} />
+    {blockIndexing && <meta name="robots" content="noindex, nofollow" />}
+
+    {/* Only the two critical families are preloaded. Literata is requested
+        on journal routes only, and never here. */}
+    <link
+      rel="preload"
+      href="/fonts/fraunces-latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
+    {/* Matches whichever theme the pre-paint script chose. Both values are
+        parsed out of tokens.css at build time rather than written twice. */}
+    <meta name="theme-color" content={lightTokens.paper} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={darkTokens.paper} media="(prefers-color-scheme: dark)" />
+
+    <meta property="og:type" content={articleSchema ? "article" : "website"} />
+    <meta property="og:title" content={pageTitle} />
+    {!isPlaceholder(pageDescription) && (
+      <meta property="og:description" content={pageDescription} />
+    )}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {features.journal && (
+      <link
+        rel="alternate"
+        type="application/rss+xml"
+        title={ui.journal.rssLabel}
+        href={new URL("/journal/rss.xml", siteUrl).href}
+      />
+    )}
+
+    <PersonSchema articleSchema={articleSchema} />
+
+    <ClientRouter />
+  </head>
+
+  <body data-prose={prose ? "true" : undefined}>
+    <a class="skip-link" href="#main">{ui.skipToContent}</a>
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      import { initMotion, reapplyTheme } from "../lib/motion";
+      // astro:page-load fires on the first load and after every view
+      // transition, so this is the single place motion is (re)built.
+      document.addEventListener("astro:page-load", initMotion);
+      // The pre-paint script does not re-run across a swap, so without this
+      // the theme flashes on client-side navigation.
+      document.addEventListener("astro:after-swap", reapplyTheme);
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

@@ -1,0 +1,64 @@
+---
+import { contact, identity, isPlaceholder } from "../content/site";
+import { ui, fill } from "../content/ui";
+import EmailLink from "./EmailLink.astro";
+
+const year = new Date().getFullYear();
+const name = isPlaceholder(identity.fullName) ? "" : identity.fullName;
+const hasLinkedIn = !isPlaceholder(contact.linkedin);
+---
+
+<footer class="site-footer">
+  <div class="shell inner">
+    <nav class="links" aria-label={ui.footerNavLabel}>
+      <EmailLink label={ui.footer.emailLabel} />
+      {hasLinkedIn && (
+        <a href={contact.linkedin} rel="me noopener noreferrer" target="_blank">
+          {ui.footer.linkedinLabel}
+        </a>
+      )}
+    </nav>
+    <p class="meta t-figure">
+      {fill(ui.footer.copyright, { YEAR: year, NAME: name })}
+    </p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: var(--hairline) solid var(--rule);
+    margin-top: var(--band-y);
+    padding-block: 2.5rem calc(2.5rem + env(safe-area-inset-bottom));
+  }
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+  }
+
+  .links {
+    display: flex;
+    gap: 1.75rem;
+    flex-wrap: wrap;
+  }
+
+  .links a {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+  }
+
+  .meta {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--ink-muted);
+  }
+</style>

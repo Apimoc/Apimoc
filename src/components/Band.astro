@@ -1,0 +1,36 @@
+---
+interface Props {
+  heading?: string | null;
+  /** Rendered as the section's accessible name when there is no heading. */
+  label?: string;
+  id?: string;
+  class?: string;
+}
+
+const { heading, label, id, class: className } = Astro.props;
+
+/**
+ * A full-bleed ruled band. Sections are bands, not floating cards: the rule
+ * belongs to the page, and the spacing belongs to the band, which is what
+ * lets any section be removed from theme.ts without leaving a gap or a
+ * doubled rule behind.
+ *
+ * Padding is set here and only here. Type-based selectors are deliberately
+ * not used for section spacing, because they collide with element-based ones
+ * at equal specificity and the winner then depends on source order.
+ */
+---
+
+<section class:list={["band", className]} id={id} aria-label={!heading ? label : undefined}>
+  <div class="shell">
+    {heading && <h2 class="t-caption heading">{heading}</h2>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .heading {
+    margin-bottom: 2rem;
+    color: var(--ink-muted);
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+# HOW TO ADD A JOURNAL POST
+# 1. Copy this file into the same folder.
+# 2. Rename it to a short, readable slug ending .mdx. That name becomes the
+#    web address, so  catching-up-recerts.mdx  becomes
+#    /journal/catching-up-recerts
+#    Do not put the date in the file name. The date lives below.
+# 3. Fill in the fields, write the post underneath, save.
+#
+# The journal is currently switched OFF. To publish it, open
+# src/content/theme.ts is not the place: open src/content/site.ts and set
+#   features.journal: true
+
+title: Post title
+description: >-
+  One or two sentences. This is what shows in the post list and in search
+  results, so make it say something. At least 20 characters.
+pubDate: "2026-01-01"
+# Add updatedDate only if you revise a post after publishing.
+# updatedDate: "2026-02-01"
+
+# Lowercase, single words where possible. These drive the tag filter.
+tags:
+  - compliance
+  - lease-up
+
+draft: false
+---
+
+Write the post here in plain Markdown. A blank line starts a new paragraph.
+
+Use `##` for a section break. On this site those render as a short centered
+rule rather than a bold heading, so a long post still reads as one document.
+
+> A line starting with a greater-than sign becomes a pull quote, set in the
+> display face and indented to the rule.
+
+Write in first person. Short declarative sentences. Specific numbers.

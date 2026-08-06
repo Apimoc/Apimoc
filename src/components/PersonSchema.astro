@@ -1,0 +1,60 @@
+---
+import {
+  identity,
+  contact,
+  seo,
+  siteUrl,
+  assets,
+  emailAddress,
+  isPlaceholder,
+} from "../content/site";
+
+interface Props {
+  /** When set, a BlogPosting graph is emitted alongside the Person. */
+  articleSchema?: string;
+}
+
+const { articleSchema } = Astro.props;
+
+/**
+ * JSON-LD. Every field is omitted rather than filled with a placeholder, so
+ * an unconfigured site emits a small correct graph instead of a large wrong
+ * one. Search engines treat a placeholder as a claim.
+ */
+const person: Record<string, unknown> = {
+  "@type": "Person",
+  "@id": `${siteUrl}/#person`,
+  url: siteUrl,
+};
+
+if (!isPlaceholder(identity.fullName)) person.name = identity.fullName;
+if (!isPlaceholder(identity.jobTitle)) person.jobTitle = identity.jobTitle;
+if (emailAddress) person.email = `mailto:${emailAddress}`;
+if (assets.portraitReady) person.image = new URL(assets.portrait, siteUrl).href;
+if (!isPlaceholder(identity.location)) {
+  person.address = {
+    "@type": "PostalAddress",
+    addressLocality: identity.location,
+  };
+}
+if (!isPlaceholder(seo.worksFor)) {
+  person.worksFor = { "@type": "Organization", name: seo.worksFor };
+}
+if (!isPlaceholder(seo.alumniOf)) {
+  person.alumniOf = { "@type": "EducationalOrganization", name: seo.alumniOf };
+}
+if (seo.knowsAbout.length) person.knowsAbout = seo.knowsAbout;
+
+const sameAs = [contact.linkedin].filter((u) => !isPlaceholder(u));
+if (sameAs.length) person.sameAs = sameAs;
+
+const graph: Record<string, unknown>[] = [person];
+
+if (articleSchema) {
+  graph.push(JSON.parse(articleSchema));
+}
+
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+---
+
+<script type="application/ld+json" is:inline set:html={jsonLd} />
