@@ -2,12 +2,15 @@
 import { ui } from "../content/ui";
 
 /**
- * The toggle is a single unit volume, lit or unlit. Same metaphor and same
- * geometry as the Occupancy Stack, rather than the sun and moon that every
- * generated site reaches for.
+ * A colored icon, not a box.
  *
- * It is a real button with aria-pressed, a 44px target, and a screen reader
- * label that says what pressing it will do.
+ * Light theme shows a sun in brass. Dark theme shows a moon in the same
+ * brass, which stays legible on the espresso ground. Both are drawn as SVG
+ * so they stay crisp at any size and inherit the palette rather than
+ * carrying colors of their own.
+ *
+ * It is a real button with aria-pressed, a 44px target, and a label that
+ * says what pressing it will do rather than what state it is in.
  */
 ---
 
@@ -20,7 +23,24 @@ import { ui } from "../content/ui";
   data-label-to-dark={ui.theme.toDark}
   data-label-to-light={ui.theme.toLight}
 >
-  <span class="unit" aria-hidden="true"></span>
+  <span class="icons" aria-hidden="true">
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke-width="1.6">
+      <circle cx="12" cy="12" r="4.4" />
+      <g stroke-linecap="round">
+        <line x1="12" y1="2.2" x2="12" y2="4.6" />
+        <line x1="12" y1="19.4" x2="12" y2="21.8" />
+        <line x1="2.2" y1="12" x2="4.6" y2="12" />
+        <line x1="19.4" y1="12" x2="21.8" y2="12" />
+        <line x1="5.1" y1="5.1" x2="6.8" y2="6.8" />
+        <line x1="17.2" y1="17.2" x2="18.9" y2="18.9" />
+        <line x1="18.9" y1="5.1" x2="17.2" y2="6.8" />
+        <line x1="6.8" y1="17.2" x2="5.1" y2="18.9" />
+      </g>
+    </svg>
+    <svg class="moon" viewBox="0 0 24 24" stroke-width="1.6" fill="none">
+      <path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1z" />
+    </svg>
+  </span>
 </button>
 
 <style>
@@ -33,33 +53,57 @@ import { ui } from "../content/ui";
     background: none;
     border: 0;
     cursor: pointer;
+    color: var(--brass);
   }
 
-  /* One unit volume, drawn in the same isometric language as the stack. */
-  .unit {
-    display: block;
-    width: 18px;
-    height: 18px;
-    border: 1px solid var(--line-ui);
-    background: transparent;
+  .icons {
+    display: grid;
+    width: 22px;
+    height: 22px;
+  }
+
+  .icons svg {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    stroke: currentColor;
     transition:
-      background-color 0.24s var(--ease-out),
-      box-shadow 0.24s var(--ease-out);
+      opacity 0.25s var(--ease-out),
+      transform 0.35s var(--ease-out);
   }
 
-  /* Lit: the theme currently in use is the one shown as occupied. */
-  :global([data-theme="dark"]) .unit {
-    background: var(--brass);
-    border-color: var(--brass);
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--brass) 22%, transparent);
+  .sun {
+    fill: color-mix(in oklab, currentColor 22%, transparent);
   }
 
-  .toggle:hover .unit {
-    border-color: var(--brass);
+  .moon {
+    fill: color-mix(in oklab, currentColor 18%, transparent);
+  }
+
+  /* The icon shows the theme you are IN, and the label says what pressing
+     it does. Showing the target instead reads as a state indicator that is
+     lying. */
+  .moon {
+    opacity: 0;
+    transform: rotate(-45deg) scale(0.7);
+  }
+
+  :global([data-theme="dark"]) .sun {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.7);
+  }
+
+  :global([data-theme="dark"]) .moon {
+    opacity: 1;
+    transform: rotate(0) scale(1);
+  }
+
+  .toggle:hover {
+    color: var(--ink);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .unit {
+    .icons svg {
       transition: none;
     }
   }
@@ -103,9 +147,8 @@ import { ui } from "../content/ui";
   }
 
   // astro:page-load fires on the FIRST load as well as after every view
-  // transition, so this is the only hook needed. Calling wire()
-  // directly here as well would bind every handler twice, and a single
-  // click would then fire both copies.
-  // View transitions swap the body, so the listener has to be reattached.
+  // transition, so this is the only hook needed. Calling wire() directly
+  // here as well would bind every handler twice, and a single click would
+  // then fire both copies.
   document.addEventListener("astro:page-load", wire);
 </script>

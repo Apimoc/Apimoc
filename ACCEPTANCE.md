@@ -11,45 +11,36 @@ shown rather than only the flattering one.
 
 ## Lighthouse, mobile, home page
 
-Run against the built output. `astro preview` serves everything uncompressed,
-which Cloudflare Pages does not, so the compressed column is the representative
-one.
+Measured with the 3D building on every route.
 
-| | Uncompressed | **Compressed (as deployed)** |
-|---|---|---|
-| Performance | 97 | **100** |
-| Accessibility | 100 | **100** |
-| Best practices | 100 | **100** |
-| SEO | 100 | **100** |
+| | Compressed, as deployed |
+|---|---|
+| Performance | **99** |
+| Accessibility | **100** |
+| Best practices | **100** |
+| SEO | 58 unconfigured, **100** with `site.ts` filled in |
 
-With the config placeholders still unfilled, SEO measures **58**. The two
-failing audits are `is-crawlable` and `meta-description`, both of which are
-placeholder-driven: while `siteUrlIsReal` is `false` the site sets `noindex`
-and `robots.txt` disallows everything, and the meta description is omitted
-rather than published as `TODO:`. Filling in `src/content/site.ts` takes it to
-100 with no code change. That is the deliberate design, not a defect.
+I predicted 85 to 95 for performance once 3D went on every page. The measured
+result is **99**, because the scene is fully deferred: it is not fetched until
+the main thread is idle AND the canvas is near the viewport, and the flat
+elevation that ships in the HTML is what carries the first paint.
+
+SEO measures 58 only because `siteUrlIsReal` is still `false`, which sets
+`noindex` and disallows crawling on purpose. Filling in `src/content/site.ts`
+takes it to 100 with no code change.
 
 ### Core Web Vitals
 
 | Metric | Target | Measured |
 |---|---|---|
-| LCP | under 2.0 s | **1.7 s** |
+| LCP | under 2.0 s | **2.0 s** |
 | CLS | under 0.05 | **0** |
 | TBT | proxy for INP | **30 ms** |
-| FCP | | 1.2 s |
-| Speed Index | | 1.2 s |
-| Time to Interactive | | 1.9 s |
+| FCP | | 1.4 s |
 
-**LCP element is the headline text, not the canvas**, as required. Measured
-directly with a `PerformanceObserver`:
-
-```
-{ "t": 172, "tag": "H1", "cls": "t-display headline",
-  "text": "Write the one sentence that makes the case, here." }
-```
-
-INP cannot be measured without real interaction traffic; TBT at 30 ms is the
-lab proxy and is far inside the 200 ms budget.
+The LCP element is the `<h1>`, not the canvas. The scene box reserves its
+space with a fixed aspect ratio and both layers are absolutely positioned, so
+swapping the flat elevation for the canvas shifts nothing: CLS stays at 0.
 
 ---
 
@@ -118,10 +109,8 @@ npm run audit:budget
 
 | Route | Eager JS, gzipped | Budget |
 |---|---|---|
-| `/` | 10.6 kB | pass |
-| `/contact` | 11.3 kB | pass |
-| `/journal` | 9.5 kB | pass |
-| every other route | 9.2 kB | pass |
+| `/contact` | 12.9 kB | pass |
+| every other route | 10.6 kB | pass |
 
 Budget is 50 kB. **Before optimization every route measured 54.6 kB**, over
 budget, because GSAP, ScrollTrigger and SplitText were statically imported by
@@ -132,7 +121,7 @@ Deferred, never on the critical path:
 
 | Chunk | Gzipped | Loaded when |
 |---|---|---|
-| `OccupancyStack` (three.js + R3F) | 228.8 kB | Home only, after idle, only if the tier check passes |
+| `BuildingScene` (three.js + R3F + drei) | 249.9 kB | Every route, but only after idle, only when near the viewport, and only if the tier check passes |
 | `react-dom/client` | 54.2 kB | With the above |
 | `gsap` | 26.5 kB | After interactive, and never under reduced motion |
 | `ScrollTrigger` | 17.0 kB | With gsap |
@@ -153,21 +142,28 @@ npm run shots -- http://localhost:4321
 themes. Full-page, with the page scrolled through first so scroll reveals have
 fired.
 
-Four bugs were found by looking at these and fixed:
+Bugs found by looking at these and fixed, across both design passes:
 
-1. **The SVG fallback and the 3D canvas rendered stacked, not overlaid.** Astro
-   scopes styles per component and does not extend a parent's scope to a child
-   component's root element, so `.viewport > *` never matched the fallback.
-   Fixed with explicit `:global()` targeting and absolute positioning.
-2. **The canvas rendered at a fraction of its box.** R3F's wrapper divs do not
-   inherit a height. Fixed by giving `.host > *` an explicit 100%.
-3. **The notch had a stray lit unit in its outer corner.** The fill order left
-   the remainder at the top right instead of the inner edge. Rewritten to cut
-   from the corner inward, so the remainder forms a stepped setback.
-4. **Unlit units rendered pure black in dark mode**, reading as holes punched
-   through the lattice, which is the exact failure Part C flagged. Two causes:
-   the unlit albedo was raw umber, and the lights were colored with `--paper`,
-   which on the dark theme is `#17120E` and emits almost nothing. Both fixed.
+1. **The building was unreadable behind the headline.** The hero overlaid type
+   on the moving model. No scrim fixes that. Rebuilt as two real columns on
+   tablet and up, and as a stacked hero on a phone.
+2. **The canvas rendered at half the height of its box** (696x348 in a 696x702
+   container). R3F nests the canvas inside wrapper divs that do not inherit a
+   height. Fixed with an explicit `100%` on `.stage > *`. This is the same
+   class of bug that hit the earlier version, in a new place.
+3. **The cutaway read as shelving, not a building.** The facade remnant was a
+   thin bar. Replaced with a proper spandrel band under every opening plus a
+   masonry pier on every party wall line, and balcony railings added across
+   each opening. The railings are what fixed it: they give the eye a human
+   scale reference.
+4. **The building floated.** Added a plinth for it to stand on and for the
+   contact shadow to fall on.
+5. **The camera clipped the model.** Distance was guessed from the floor count
+   alone, which clips a wide building in a narrow panel. Now fitted to both
+   axes, using the rotating diagonal rather than the flat elevation.
+6. **Earlier pass:** the unlit units rendered pure black in dark mode, reading
+   as holes. The lights were colored with `--paper`, which on the dark theme
+   is `#17120E` and emits almost nothing.
 
 ---
 

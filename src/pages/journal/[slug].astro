@@ -4,6 +4,7 @@ import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { features, siteUrl, identity, isPlaceholder } from "../../content/site";
 import { ui } from "../../content/ui";
+import BuildingMount from "../../components/BuildingMount.astro";
 import { formatDateLong, isoDate } from "../../lib/format";
 import "../../styles/prose.css";
 
@@ -50,6 +51,9 @@ const articleSchema = JSON.stringify({
 >
   <article class="post">
     <div class="shell">
+      <div class="detail-scene">
+        <BuildingMount scene="journal" size="banner" />
+      </div>
       <p class="back">
         <a href="/journal">{ui.cta.backToJournal}</a>
       </p>
@@ -87,6 +91,13 @@ const articleSchema = JSON.stringify({
 <style>
   .post {
     padding-block: clamp(2rem, 6vw, 3.5rem) 0;
+  }
+
+  .detail-scene {
+    /* Smaller here: on a reading page the architecture is a header mark, not
+       the subject. */
+    max-width: 22rem;
+    margin: 0 0 1.5rem auto;
   }
 
   .back {

@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import { ui } from "../content/ui";
+import BuildingMount from "../components/BuildingMount.astro";
 
 /**
  * Designed, not default. It uses the same ruled language as the rest of the
@@ -10,7 +11,10 @@ import { ui } from "../content/ui";
 
 <Base title={ui.notFound.heading} noindex>
   <section class="band notfound" aria-label={ui.notFound.heading}>
-    <div class="shell">
+    <div class="scene-slot">
+      <BuildingMount scene="notFound" size="banner" />
+    </div>
+    <div class="shell copy">
       <p class="code t-figure">{ui.notFound.code}</p>
       <h1 class="t-display">{ui.notFound.heading}</h1>
       <p class="body measure">{ui.notFound.body}</p>
@@ -23,7 +27,31 @@ import { ui } from "../content/ui";
 
 <style>
   .notfound {
-    padding-block: clamp(3rem, 10vw, 7rem);
+    display: grid;
+    align-items: center;
+    padding-block: clamp(2rem, 7vw, 5rem);
+  }
+
+  .scene-slot,
+  .copy {
+    grid-area: 1 / 1;
+  }
+
+  .copy {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .copy :global(a) {
+    pointer-events: auto;
+  }
+
+  @media (min-width: 48rem) {
+    .scene-slot {
+      justify-self: end;
+      width: 44%;
+    }
   }
 
   .code {

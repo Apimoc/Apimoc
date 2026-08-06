@@ -27,16 +27,16 @@ export function isPlaceholder(value: string | undefined | null): boolean {
 
 export const identity = {
   /** Displayed everywhere as the primary name. */
-  fullName: "TODO: Full name, for example Alexandra Denton",
+  fullName: "Alexandra Denton",
 
   /** Informal short form. Used in the contact copy only. */
-  shortName: "TODO: Short name, for example Allie",
+  shortName: "Allie",
 
   /** Post-nominals shown after the name in the header and JSON-LD. */
-  postNominals: "TODO: for example ARM®",
+  postNominals: "ARM®",
 
   /** Job title. Used in the header, meta description and JSON-LD. */
-  jobTitle: "TODO: for example Multi-site Property Manager",
+  jobTitle: "Multi-Site Property Manager",
 
   /** Shown in the header and footer. */
   location: "TODO: for example Greater Boston",
@@ -81,9 +81,9 @@ export const siteUrl = "https://example.com";
 export const siteUrlIsReal = false;
 
 /* --------------------------------------------------------------------------
-   2. THE SIGNATURE ELEMENT
-   The Occupancy Stack renders directly from these numbers. Change them here
-   and the 3D stack, the SVG fallback and the text equivalent all follow.
+   2. LEASE-UP FIGURES
+   These belong to the Experience page, not the landing page. The landing
+   page is an introduction, not a stat sheet.
    -------------------------------------------------------------------------- */
 
 export const occupancy = {
@@ -131,8 +131,11 @@ export const features = {
    */
   journal: false,
 
-  /** The 3D hero. Set false to always serve the SVG fallback. */
-  occupancyStack3D: true,
+  /**
+   * The 3D buildings. Set false to serve the flat elevation everywhere.
+   * Per-page building size and motion live in src/content/scenes.ts.
+   */
+  buildingScene: true,
 
   /** Smooth scrolling, desktop pointer devices only, never on touch. */
   smoothScroll: true,

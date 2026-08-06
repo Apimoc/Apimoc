@@ -1,5 +1,7 @@
 ---
 import Base from "./Base.astro";
+import BuildingMount from "../components/BuildingMount.astro";
+import type { SceneName } from "../content/scenes";
 
 interface Props {
   title: string;
@@ -10,14 +12,22 @@ interface Props {
   standfirst?: string;
   prose?: boolean;
   noindex?: boolean;
+  /** Which building this page shows. See src/content/scenes.ts. */
+  scene?: SceneName;
 }
 
-const { title, description, heading, standfirst, prose, noindex } = Astro.props;
+const { title, description, heading, standfirst, prose, noindex, scene } =
+  Astro.props;
 ---
 
 <Base title={title} description={description} prose={prose} noindex={noindex}>
   <header class="page-head">
-    <div class="shell">
+    {scene && (
+      <div class="page-scene">
+        <BuildingMount scene={scene} size="banner" />
+      </div>
+    )}
+    <div class="shell head-copy">
       <h1 class="t-display" data-reveal="lines">{heading}</h1>
       {standfirst && (
         <p class="standfirst measure" data-reveal="block">{standfirst}</p>
@@ -29,7 +39,43 @@ const { title, description, heading, standfirst, prose, noindex } = Astro.props;
 
 <style>
   .page-head {
-    padding-block: clamp(2.5rem, 7vw, 4.5rem) clamp(2rem, 5vw, 3rem);
+    display: grid;
+    align-items: center;
+    padding-block: clamp(1.5rem, 5vw, 3rem) clamp(2rem, 5vw, 3rem);
+  }
+
+  .page-head {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .head-copy {
+    order: 1;
+  }
+
+  .page-scene {
+    order: 2;
+    width: 100%;
+  }
+
+  .head-copy :global(a) {
+    pointer-events: auto;
+  }
+
+  @media (min-width: 48rem) {
+    .page-head {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 2rem;
+    }
+
+    .head-copy {
+      grid-area: 1 / 1;
+    }
+
+    .page-scene {
+      grid-area: 1 / 2;
+      justify-self: stretch;
+    }
   }
 
   .page-head h1 {

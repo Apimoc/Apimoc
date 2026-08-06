@@ -1,0 +1,104 @@
+---
+import { lightTokens, darkTokens } from "../lib/tokens";
+import { ui } from "../content/ui";
+import { scenes, type SceneName } from "../content/scenes";
+import BuildingFallback from "./BuildingFallback.astro";
+
+interface Props {
+  /** Which scene preset to use. Defined in src/content/scenes.ts. */
+  scene?: SceneName;
+  /** Tall on the landing page, shorter banner on inner pages. */
+  size?: "hero" | "banner";
+  class?: string;
+}
+
+const { scene = "home", size = "banner", class: className } = Astro.props;
+const preset = scenes[scene] ?? scenes.home;
+
+const config = JSON.stringify({
+  light: lightTokens,
+  dark: darkTokens,
+  ...preset,
+});
+---
+
+<div class:list={["scene", size, className]} data-scene-size={size}>
+  <div class="stage" data-scene-host data-scene-config={config}></div>
+  <BuildingFallback floors={preset.floors} unitsPerFloor={preset.unitsPerFloor} />
+  <p class="sr-only">{ui.scene.description}</p>
+</div>
+
+<style>
+  .scene {
+    position: relative;
+    width: 100%;
+    /* The canvas and the fallback occupy exactly the same box, so swapping
+       one for the other shifts nothing. */
+  }
+
+  .scene.hero {
+    height: min(52vh, 24rem);
+  }
+
+  .scene.banner {
+    height: min(34vh, 15rem);
+  }
+
+  @media (min-width: 48rem) {
+    .scene.hero {
+      height: min(78vh, 44rem);
+    }
+
+    .scene.banner {
+      height: min(42vh, 22rem);
+    }
+  }
+
+  /* Both layers are taken out of flow, so neither the SVG's intrinsic
+     height nor the canvas wrapper can push the box past its set height. */
+  .scene > .stage,
+  .scene > :global([data-scene-fallback]) {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* React Three Fiber nests the canvas inside wrapper divs that do not
+     inherit a height on their own. Without this the canvas measures its
+     parent as auto and renders at roughly half the box. */
+  .stage > :global(*) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .stage {
+    z-index: 1;
+    /* The scene never intercepts a scroll gesture. It reacts to scrolling,
+       it does not capture it. */
+    pointer-events: none;
+  }
+
+  .stage :global(canvas) {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .scene > :global([data-scene-fallback]) {
+    transition: opacity 0.5s var(--ease-out);
+  }
+
+  .scene > :global([data-scene-fallback][data-replaced="true"]) {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scene > :global([data-scene-fallback]) {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { mountScenes } from "../lib/mount-scene";
+  document.addEventListener("astro:page-load", mountScenes);
+</script>

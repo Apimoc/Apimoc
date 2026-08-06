@@ -87,11 +87,24 @@ reduced-motion check happens *before* the import, so a visitor who has asked
 for less motion downloads no animation library at all. This is what keeps
 every route at 9.2 kB instead of 54.6 kB.
 
-**The 3D stack is never on the critical path.** The server renders an SVG
-version of the same object, from the same geometry code. The React island
-replaces it only after the main thread goes idle, only when the canvas is near
-the viewport, and only on devices that pass a tier check. The fallback is not a
-degraded state: it is what most visitors see, and it is designed.
+**The 3D building is on every route and still never on the critical path.**
+Each page shows a cutaway apartment building that turns as you scroll: floor
+plates, party walls, balcony railings and a door number on every unit, with
+occupied units lit from within. It is generated in code, not imported: the
+brick, stucco and concrete are procedural canvas textures, and the environment
+lighting is built from emissive planes rather than a downloaded HDRI, because
+nothing may be fetched from another host.
+
+The flat elevation of the same building is server-rendered and ships in the
+HTML, so it carries the first paint. The React island replaces it only after
+the main thread goes idle, only when the canvas is near the viewport, and only
+on devices that pass a tier check. Weak devices get a lighter build (no
+shadows, lower pixel ratio) rather than nothing. Reduced motion, saveData and
+no-WebGL keep the flat drawing, which is a finished piece of design rather
+than a degraded state.
+
+Per-page building size, occupancy and rotation live in
+`src/content/scenes.ts`, one line per route.
 
 **The Content Security Policy is generated, not hand-written.** Astro hashes
 every inline script at build time and emits the policy as a meta element. The
@@ -241,14 +254,14 @@ Lighthouse mobile, home page, served with compression as Cloudflare does:
 
 | | |
 |---|---|
-| Performance | 100 |
+| Performance | 99 |
 | Accessibility | 100 |
 | Best practices | 100 |
 | SEO | 100 |
-| LCP | 1.7 s, and the LCP element is the `<h1>` text |
+| LCP | 2.0 s, and the LCP element is the `<h1>` text |
 | CLS | 0 |
 | axe-core violations | 0, across 10 routes in both themes |
-| JavaScript per route | 9.2 kB gzipped, against a 50 kB budget |
+| JavaScript per route | 10.6 kB gzipped, against a 50 kB budget |
 
 Full detail, including the numbers with the config still unfilled, is in
 [`ACCEPTANCE.md`](ACCEPTANCE.md).

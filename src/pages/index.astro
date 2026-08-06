@@ -5,7 +5,7 @@ import Band from "../components/Band.astro";
 import RentRollStrip from "../components/RentRollStrip.astro";
 import CareerSpine from "../components/CareerSpine.astro";
 import CaseStudyList from "../components/CaseStudyList.astro";
-import OccupancyStackMount from "../components/OccupancyStackMount.astro";
+import BuildingMount from "../components/BuildingMount.astro";
 import EmailLink from "../components/EmailLink.astro";
 import Portrait from "../components/Portrait.astro";
 import { activeHomeSections } from "../content/theme";
@@ -13,10 +13,13 @@ import { identity, assets, contact, isPlaceholder } from "../content/site";
 import { ui, fill } from "../content/ui";
 
 /**
- * The home page is composed from the array in src/content/theme.ts. Reorder
- * that array and this page reorders. Remove an entry and the section
- * disappears without leaving a gap, because every band owns its own spacing
- * and rule.
+ * The landing page introduces her. It is not a stat sheet: the unit counts,
+ * the rent roll and the dated career rows all live on /experience, where
+ * someone has already decided to look properly.
+ *
+ * Sections come from the array in src/content/theme.ts. Reorder that array
+ * and this page reorders; disable an entry and it disappears without leaving
+ * a gap, because every band owns its own spacing and rule.
  */
 
 const sections = await getCollection("home");
@@ -40,25 +43,26 @@ const hasEmail = !isPlaceholder(contact.emailUser);
       switch (section.id) {
         /* ---------------------------------------------------------------
            HERO
-           The LCP element is the headline text, never the canvas. Both CTAs
-           sit above the fold on a phone: a recruiter reaches her in two taps.
+           The building sits behind the type rather than beside it, so the
+           first thing on screen is a piece of architecture. The LCP element
+           is still the headline text, never the canvas.
            --------------------------------------------------------------- */
         case "hero":
           return (
-            <section class="band hero" aria-label={hero?.data.headline ?? undefined}>
-              <div class="shell">
+            <section class="hero" aria-label={hero?.data.headline ?? undefined}>
+              <div class="hero-scene">
+                <BuildingMount scene="home" size="hero" />
+              </div>
+
+              <div class="shell hero-copy">
                 <h1 class="t-display headline" data-reveal="lines">
                   {hero?.data.headline}
                 </h1>
                 {hero?.data.standfirst && (
-                  <p class="standfirst measure" data-reveal="block">
+                  <p class="standfirst" data-reveal="block">
                     {hero.data.standfirst}
                   </p>
                 )}
-
-                <div class="stack-slot" data-reveal="block">
-                  <OccupancyStackMount />
-                </div>
 
                 <div class="cta" data-reveal="block">
                   {hasEmail && (
@@ -67,11 +71,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
                       label={fill(ui.cta.email, { NAME: ctaName }).trim()}
                     />
                   )}
-                  {assets.cvReady && (
-                    <a class="button" href={assets.cv} download>
-                      {ui.cta.downloadCv}
-                    </a>
-                  )}
+                  <a class="button" href="/experience">{ui.cta.fullCv}</a>
                 </div>
               </div>
             </section>
@@ -128,7 +128,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
               <div class="measure" data-reveal="block">
                 {ContactBody && <ContactBody />}
                 <p class="more">
-                  <a href="/contact">{ui.cta.email.replace("%NAME%", ctaName).trim()}</a>
+                  <a href="/contact">{fill(ui.cta.email, { NAME: ctaName }).trim()}</a>
                 </p>
               </div>
             </Band>
@@ -142,32 +142,58 @@ const hasEmail = !isPlaceholder(contact.emailUser);
 </Base>
 
 <style>
+  /* The scene and the copy share one grid cell, so the type sits over the
+     architecture without either being positioned absolutely against the
+     other. */
   .hero {
-    padding-top: clamp(2.5rem, 7vw, 5rem);
+    display: grid;
+    align-items: center;
+    padding-block: clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 4rem);
+  }
+
+  /* On a phone the two stack: copy first, then the building. Overlaying a
+     headline on a moving building is unreadable at 390px and no amount of
+     scrim fixes it. From tablet up they become side-by-side columns. */
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(1.5rem, 5vw, 2.5rem);
+  }
+
+  .hero-copy {
+    order: 1;
+  }
+
+  .hero-scene {
+    order: 2;
+    width: 100%;
+  }
+
+  /* Only the actual controls take pointer events back, so the building never
+     eats a click or a swipe. */
+  .hero-copy :global(a) {
+    pointer-events: auto;
   }
 
   .headline {
-    max-width: 22ch;
+    max-width: 16ch;
   }
 
   .standfirst {
     margin: 1.75rem 0 0;
+    max-width: 34ch;
     font-size: 1.125rem;
     color: var(--ink-muted);
-  }
-
-  .stack-slot {
-    margin: clamp(2.5rem, 6vw, 4rem) 0 clamp(2rem, 5vw, 3rem);
   }
 
   .cta {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+    margin-top: 2.25rem;
   }
 
-  /* Buttons are ruled rectangles, consistent with everything else. No
-     radius, no shadow, no gradient. */
+  /* Ruled rectangles, consistent with everything else. No radius, no shadow,
+     no gradient. */
   .cta :global(.button) {
     display: inline-flex;
     align-items: center;
@@ -175,12 +201,14 @@ const hasEmail = !isPlaceholder(contact.emailUser);
     min-height: 48px;
     padding: 0 1.4rem;
     border: var(--hairline) solid var(--line-ui);
+    background: color-mix(in oklab, var(--paper) 82%, transparent);
     color: var(--ink);
     text-decoration: none;
     font-size: var(--text-caption);
     letter-spacing: var(--tracking-caption);
     text-transform: uppercase;
     font-weight: 500;
+    backdrop-filter: blur(4px);
     transition:
       background-color 0.18s var(--ease-out),
       color 0.18s var(--ease-out);
@@ -205,6 +233,10 @@ const hasEmail = !isPlaceholder(contact.emailUser);
     align-items: start;
   }
 
+  .about-copy :global(p) {
+    margin: 0 0 1.15rem;
+  }
+
   .more {
     margin: 1.5rem 0 0;
     font-size: var(--text-caption);
@@ -215,6 +247,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
 
   .more :global(a) {
     text-decoration: none;
+    pointer-events: auto;
   }
 
   .more :global(a::after) {
@@ -226,11 +259,25 @@ const hasEmail = !isPlaceholder(contact.emailUser);
       grid-template-columns: 14rem 1fr;
       gap: 3rem;
     }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    .cta :global(.button) {
-      transition: none;
+    /* Two real columns. The type never crosses the building. */
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: clamp(1rem, 4vw, 3rem);
+    }
+
+    .hero-copy {
+      grid-area: 1 / 1;
+    }
+
+    .hero-scene {
+      grid-area: 1 / 2;
+      justify-self: stretch;
+    }
+
+    .headline {
+      max-width: 14ch;
     }
   }
 </style>

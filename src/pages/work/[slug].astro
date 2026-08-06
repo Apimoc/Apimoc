@@ -3,6 +3,7 @@ import type { GetStaticPaths } from "astro";
 import { getCollection, render } from "astro:content";
 import Base from "../../layouts/Base.astro";
 import { ui } from "../../content/ui";
+import BuildingMount from "../../components/BuildingMount.astro";
 import { byOrderThenDate } from "../../lib/format";
 import "../../styles/prose.css";
 
@@ -31,6 +32,9 @@ const next = index >= 0 && index < all.length - 1 ? all[index + 1] : undefined;
 <Base title={item.data.title} description={item.data.summary} prose>
   <article class="jacket">
     <div class="shell">
+      <div class="detail-scene">
+        <BuildingMount scene="work" size="banner" />
+      </div>
       <p class="back">
         <a href="/work">{ui.cta.backToWork}</a>
       </p>
@@ -89,6 +93,13 @@ const next = index >= 0 && index < all.length - 1 ? all[index + 1] : undefined;
 <style>
   .jacket {
     padding-block: clamp(2rem, 6vw, 3.5rem) 0;
+  }
+
+  .detail-scene {
+    /* Smaller here: on a reading page the architecture is a header mark, not
+       the subject. */
+    max-width: 22rem;
+    margin: 0 0 1.5rem auto;
   }
 
   .back {

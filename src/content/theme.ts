@@ -37,11 +37,15 @@ export interface HomeSection {
 
 export const homeSections: HomeSection[] = [
   { id: "hero", enabled: true, heading: null },
-  { id: "rentRoll", enabled: true, heading: null },
-  { id: "careerSpine", enabled: true, heading: "Career" },
-  { id: "caseStudies", enabled: true, heading: "Case studies" },
   { id: "about", enabled: true, heading: "About" },
+  { id: "caseStudies", enabled: true, heading: "Selected work" },
   { id: "contact", enabled: true, heading: "Contact" },
+
+  /* Off by design. The landing page introduces her; the numbers belong on
+     the Experience page, where someone has already decided to look properly.
+     Set either of these to true to bring it onto the home page. */
+  { id: "rentRoll", enabled: false, heading: null },
+  { id: "careerSpine", enabled: false, heading: "Career" },
 ];
 
 /** Only the sections actually switched on, in order. */

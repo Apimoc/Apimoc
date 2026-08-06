@@ -67,12 +67,17 @@ export const ui = {
     home: "Back to home",
   },
 
-  /* --- Occupancy Stack ---------------------------------------------------
-     The canvas is aria-hidden. This is the text a screen reader gets
-     instead, so the occupancy story is never lost. */
+  /* --- The 3D building ---------------------------------------------------
+     The canvas is hidden from assistive technology. This is the text a
+     screen reader gets instead, so the image is never just a blank. */
+  scene: {
+    description:
+      "A cutaway illustration of an apartment building, with its front wall removed to show the floors and the individual units inside. Each unit carries its door number, and the occupied ones are lit from within. It turns slowly as the page scrolls.",
+  },
+
+  /* --- Lease-up figures, on the Experience page --------------------------- */
   stack: {
     regionLabel: "Lease-up occupancy",
-    /** Shown under the stack on every tier, 3D and fallback alike. */
     caption: "Units leased against total, by floor.",
   },
 

@@ -237,6 +237,11 @@ export const homeSections: HomeSection[] = [
 - **To hide a section,** change its `enabled: true` to `enabled: false`.
 - **To rename a heading,** edit the text in quotes.
 
+Two sections are switched **off** by default: `rentRoll` and `careerSpine`.
+The landing page is an introduction, not a stat sheet, so the unit counts and
+the dated career rows live on the Experience page instead. Set either to
+`enabled: true` if you want them on the front page after all.
+
 Nothing breaks when you remove a section. Each one carries its own spacing, so
 the page closes up around the gap.
 
@@ -256,27 +261,33 @@ stop and tell you if you add a fifth.
 
 ---
 
-## Changing the 3D stack on the home page
+## Changing the 3D buildings
 
-**File:** `src/content/site.ts`, the section headed `THE SIGNATURE ELEMENT`.
+**File:** `src/content/scenes.ts`
+
+Every page has its own building. One line each:
 
 ```ts
-export const occupancy = {
-  totalUnits: 153,
-  leasedUnits: 142,
-  unitsPerFloor: 9,
-  period: "9 months",
-  label: "142 of 153 leased · 9 months",
-  textEquivalent: "A lattice of 153 unit volumes ...",
-};
+home: { floors: 6, unitsPerFloor: 5, occupancy: 0.78, spin: 1.5, yaw: -0.35 },
 ```
 
-Change the numbers and everything follows: the 3D stack, the simpler version
-shown on older phones, and the description read aloud by screen readers. The
-unlit units automatically gather into a single notch at one corner.
+| Field | What it does |
+|---|---|
+| `floors` | How many storeys. 3 to 8 works well; more than 10 gets small |
+| `unitsPerFloor` | How many homes across. 4 to 6 reads best |
+| `occupancy` | Roughly how many units are lit, from 0 to 1 |
+| `spin` | How far a full page scroll turns it, in radians. 1.5 is about a quarter turn |
+| `yaw` | The starting angle, so each page opens on a different face |
 
-**Update `label` and `textEquivalent` to match when you change the numbers.**
-Those two are written out in words and will not update themselves.
+Change a number and everything follows: the 3D building, the flat drawing
+shown on phones that cannot run it, and the unit numbers on every door.
+
+The unit numbers are generated, not typed. Floor 1 is 101, 102, 103; floor 2
+is 201, 202, 203, and so on.
+
+**To turn the 3D off entirely**, open `src/content/site.ts` and set
+`buildingScene: false`. Every page then shows the flat drawing instead. It
+is a real drawing, not a broken state, so this is a safe thing to do.
 
 ---
 

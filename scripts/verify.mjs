@@ -88,13 +88,14 @@ async function stackState(contextOptions, initScript) {
   await page.waitForTimeout(3000);
   const state = await page.evaluate(() => ({
     mounted:
-      document.querySelector("[data-stack-host]")?.dataset.mounted === "true",
-    canvas: !!document.querySelector("[data-stack-host] canvas"),
+      document.querySelector("[data-scene-host]")?.dataset.mounted === "true",
+    canvas: !!document.querySelector("[data-scene-host] canvas"),
     fallbackVisible:
-      document.querySelector("[data-stack-fallback]")?.dataset.replaced !==
+      document.querySelector("[data-scene-fallback]")?.dataset.replaced !==
       "true",
-    fallbackUnits: document.querySelectorAll("[data-stack-fallback] rect")
+    fallbackUnits: document.querySelectorAll("[data-scene-fallback] .room")
       .length,
+    quality: document.querySelector("[data-scene-host]")?.dataset.quality,
   }));
   await context.close();
   return state;
@@ -103,7 +104,7 @@ async function stackState(contextOptions, initScript) {
 {
   const normal = await stackState({ viewport: { width: 1280, height: 900 } });
   check(
-    "3D island mounts on a capable device",
+    "3D building mounts on a capable device",
     normal.mounted && normal.canvas,
     JSON.stringify(normal),
   );
@@ -115,7 +116,7 @@ async function stackState(contextOptions, initScript) {
     reducedMotion: "reduce",
   });
   check(
-    "reduced motion serves the SVG fallback, no 3D",
+    "reduced motion serves the flat elevation, no 3D",
     !reduced.mounted && !reduced.canvas && reduced.fallbackVisible,
     JSON.stringify(reduced),
   );
@@ -130,7 +131,7 @@ async function stackState(contextOptions, initScript) {
     };
   });
   check(
-    "WebGL unavailable serves the SVG fallback",
+    "WebGL unavailable serves the flat elevation",
     !noWebgl.mounted && !noWebgl.canvas && noWebgl.fallbackVisible,
     JSON.stringify(noWebgl),
   );
@@ -144,7 +145,7 @@ async function stackState(contextOptions, initScript) {
     });
   });
   check(
-    "saveData serves the SVG fallback",
+    "saveData serves the flat elevation",
     !saveData.mounted && !saveData.canvas,
     JSON.stringify(saveData),
   );
@@ -157,9 +158,12 @@ async function stackState(contextOptions, initScript) {
       configurable: true,
     });
   });
+  /* A low-memory device still gets a building, just a cheaper one: no
+     shadows and a lower pixel ratio. Dropping 3D entirely there would break
+     the brief, which asks for it on every device. */
   check(
-    "deviceMemory 4 or below serves the SVG fallback",
-    !lowMem.mounted && !lowMem.canvas,
+    "low-memory device gets the lighter 3D build, not none",
+    lowMem.mounted && lowMem.quality === "low",
     JSON.stringify(lowMem),
   );
 }
@@ -170,10 +174,11 @@ async function stackState(contextOptions, initScript) {
     viewport: { width: 1280, height: 900 },
     reducedMotion: "reduce",
   });
+  // The home scene is 6 floors of 5 units. See src/content/scenes.ts.
   check(
-    "SVG fallback draws the full lattice",
-    fb.fallbackUnits === 153,
-    `${fb.fallbackUnits} unit rects`,
+    "flat elevation draws every unit",
+    fb.fallbackUnits === 30,
+    `${fb.fallbackUnits} units drawn`,
   );
 }
 

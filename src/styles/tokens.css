@@ -23,6 +23,18 @@
   --brass: #7e5b18; /* links, accent, focus rings */
   --umber: #4a3728; /* rules, borders */
 
+  /* --- 3D scene materials ------------------------------------------------
+     The building in the hero is lit and textured from these. They live here
+     so this file stays the only place in the project a colour is written.
+     They are material colours, not UI colours, so they carry no contrast
+     requirement: nothing is ever set in them. */
+  --mat-brick: #8c5a3c; /* warm red-brown brick */
+  --mat-mortar: #d9cfbe; /* pale joint */
+  --mat-stucco: #e4daca; /* rendered party walls */
+  --mat-concrete: #c6bcaa; /* exposed floor slabs */
+  --mat-roof: #4a4038; /* composition roofing */
+  --mat-trim: #6e625a; /* window frames and mullions */
+
   /* Role split. --rule is decorative only. --line-ui carries any boundary a
      user must see in order to operate the interface: form field borders,
      checkbox outlines, focus rings. In light theme both resolve to umber. */
@@ -78,6 +90,13 @@
   --ink-muted: #a3937e;
   --brass: #c9a227;
   --umber: #3a2e24;
+
+  --mat-brick: #4a3428;
+  --mat-mortar: #2a2119;
+  --mat-stucco: #2e251c;
+  --mat-concrete: #3a3128;
+  --mat-roof: #1d1712;
+  --mat-trim: #7a6c5c;
 
   --rule: var(--umber);
   /* umber measures 1.41:1 here and fails the 3:1 non-text requirement.

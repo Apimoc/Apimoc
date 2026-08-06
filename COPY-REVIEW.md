@@ -37,7 +37,7 @@ House style applied throughout, from the brief:
 | `Period` / `Role` / `Units` / `Program` | Career table | Column headings |
 | `Issued by` | Credentials | |
 | `Systems` | Credentials | Heading for the software group |
-| `Units leased against total, by floor.` | Under the 3D stack | Explains what the object is showing |
+| The 3D building description | Screen readers, in place of the canvas | Describes the cutaway, the door numbers and the lit units |
 | `Set in Fraunces and Instrument Sans.` | Footer | Delete if unwanted. It is a designer's habit, not a requirement |
 
 ### Theme toggle
@@ -129,6 +129,49 @@ No apology, no joke. Two plausible causes and a way out.
 
 ---
 
+## 4b. Landing page copy, NEW and entirely mine
+
+The landing page was rewritten from a stat sheet into an introduction. Every
+line below is written by me and is the first thing to replace in her own
+voice. It is deliberately written as a reusable property-management template
+rather than tied to her specific numbers.
+
+**Headline** (`src/content/home/hero.mdx`):
+
+> I take over properties that are behind and get them compliant and occupied.
+
+**Standfirst**, same file:
+
+> Multi-site property manager working across affordable and market rate
+> housing. I go into sites that are understaffed or behind on compliance and
+> hand them back stable.
+
+**About paragraph** (`src/content/home/about.mdx`), also used on `/about`:
+
+> I manage multifamily properties, and most of my work starts after something
+> has gone sideways: a lease-up that stalled, recertifications that piled up,
+> a site that lost its manager mid-year.
+>
+> The work is unglamorous and specific. Get the files current. Get the units
+> turned and leased. Get the staff trained so the site holds together after I
+> leave. I would rather hand a property back running quietly than tell you a
+> story about it.
+
+**Contact invitation** (`src/content/home/contact.mdx`):
+
+> I am open to multi-site and regional roles. If you have a property that
+> needs steadying, or a portfolio that needs someone who can walk into any of
+> it, get in touch.
+
+The last line of the About paragraph is the one with the most personality and
+the most risk. It is a point of view about how she works, not a fact, so it
+should either be kept because she agrees with it or cut entirely.
+
+No unit counts, no occupancy percentages and no property names appear on the
+landing page by design. Those live on Experience and Work.
+
+---
+
 ## 5. Placeholder content in the MDX files
 
 These are instructions to whoever fills the site in, not copy. Every one of
@@ -137,11 +180,7 @@ missed.
 
 | File | Placeholder text |
 |---|---|
-| `home/hero.mdx` | "Write the one sentence that makes the case, here." |
-| `home/hero.mdx` | "Two or three short lines under the headline..." |
-| `home/rent-roll.mdx` | `000` / `00%` / `0 months` and their labels |
-| `home/about.mdx` | "A short first-person paragraph..." |
-| `home/contact.mdx` | "One line inviting contact..." |
+| `home/rent-roll.mdx` | `000` / `00%` / `0 months` and their labels. Not shown on the landing page; used if `rentRoll` is switched on |
 | `experience/role-*.mdx` | "Most recent role title", "Organization name", bullets |
 | `work/case-study-*.mdx` | "First case study title" and the three sections |
 | `credentials/*.mdx` | "First credential name", "Awarding body" |

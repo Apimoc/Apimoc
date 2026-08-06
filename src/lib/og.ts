@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
 import { lightTokens } from "./tokens";
-import { buildStack } from "./stack-layout";
+import { scenes } from "../content/scenes";
 
 /**
  * Build-time Open Graph images.
@@ -43,39 +43,64 @@ const el = (type: string, style: Record<string, unknown>, children?: unknown): N
   props: { style, ...(children === undefined ? {} : { children }) },
 });
 
-/** A small occupancy lattice, carrying the signature element into the card. */
-function lattice(): Node {
-  const stack = buildStack();
-  const cols = stack.cols;
-  /* Show the TOP of the stack, because that is where the notch is. Taking
-     the bottom rows would crop out the one feature the lattice exists to
-     show. */
-  const visible = Math.min(stack.rows, 12);
-  const lowest = stack.rows - visible;
+/** The cutaway, flattened into an elevation, carrying the site's signature
+    element into the card. */
+function building(): Node {
+  const { floors, unitsPerFloor } = scenes.home;
 
-  const cells: Node[] = [];
-  for (let row = stack.rows - 1; row >= lowest; row -= 1) {
-    const rowCells: Node[] = [];
-    for (let col = 0; col < cols; col += 1) {
-      const source = stack.units.find((u) => u.col === col && u.row === row);
-      rowCells.push(
+  const rand = (n: number) => {
+    const x = Math.sin(n * 127.1) * 43758.5453;
+    return x - Math.floor(x);
+  };
+
+  const rows: Node[] = [];
+  let index = 0;
+
+  // Roof.
+  rows.push(
+    el("div", {
+      display: "flex",
+      width: unitsPerFloor * 34 + 12,
+      height: 8,
+      backgroundColor: lightTokens.roof,
+      marginBottom: 2,
+    }),
+  );
+
+  for (let floor = floors - 1; floor >= 0; floor -= 1) {
+    const units: Node[] = [];
+    for (let col = 0; col < unitsPerFloor; col += 1) {
+      const seed = floor * unitsPerFloor + col;
+      const bias = 1 - floor / (floors * 1.8);
+      const lit = rand(seed) < 0.78 * bias + 0.12;
+      units.push(
         el("div", {
           display: "flex",
-          width: 12,
-          height: 12,
-          marginRight: 3,
-          backgroundColor: source?.lit ? lightTokens.brass : "transparent",
-          border: `1px solid ${source?.lit ? lightTokens.brass : lightTokens.umber}`,
-          opacity: source?.lit ? 0.92 : 0.35,
+          width: 30,
+          height: 24,
+          marginRight: 4,
+          backgroundColor: lit ? lightTokens.brass : lightTokens.stucco,
+          border: `1px solid ${lit ? lightTokens.brass : lightTokens.concrete}`,
+          opacity: lit ? 0.92 : 0.55,
         }),
       );
+      index += 1;
     }
-    cells.push(
-      el("div", { display: "flex", marginBottom: 3 }, rowCells),
+    rows.push(el("div", { display: "flex" }, units));
+    // Exposed floor slab, the thing that makes it read as a cutaway.
+    rows.push(
+      el("div", {
+        display: "flex",
+        width: unitsPerFloor * 34 + 6,
+        height: 4,
+        backgroundColor: lightTokens.concrete,
+        marginBottom: 3,
+      }),
     );
   }
 
-  return el("div", { display: "flex", flexDirection: "column" }, cells);
+  void index;
+  return el("div", { display: "flex", flexDirection: "column" }, rows);
 }
 
 export interface OgOptions {
@@ -173,7 +198,7 @@ export async function renderOgImage(options: OgOptions): Promise<Buffer> {
       padding: 72,
       alignItems: "stretch",
     },
-    [left, el("div", { display: "flex", alignItems: "center" }, lattice())],
+    [left, el("div", { display: "flex", alignItems: "center" }, building())],
   );
 
   const svg = await satori(tree as never, { width: 1200, height: 630, fonts });

@@ -21,10 +21,6 @@ Everything except the two files is in **one file**: `src/content/site.ts`.
 
 | Value | Where | Notes |
 |---|---|---|
-| `identity.fullName` | `site.ts` | Header, footer, page titles, JSON-LD |
-| `identity.shortName` | `site.ts` | Used only in the "Email ___" button |
-| `identity.postNominals` | `site.ts` | `ARM®`. Shown after the name in the header |
-| `identity.jobTitle` | `site.ts` | Meta description and JSON-LD `jobTitle` |
 | `identity.location` | `site.ts` | `Greater Boston`, or `Rome, NY → Greater Boston` |
 | `contact.emailUser` | `site.ts` | Part before the `@`. Use a dedicated address |
 | `contact.emailDomain` | `site.ts` | Part after the `@` |
@@ -33,6 +29,10 @@ Everything except the two files is in **one file**: `src/content/site.ts`.
 | `siteUrl` + `siteUrlIsReal` | `site.ts` | The real domain. See below |
 | `assets.portrait` | `src/assets/portrait.jpg` | Then set `portraitReady: true` |
 | `assets.cv` | `public/cv.pdf` | Then set `cvReady: true` |
+
+Name, short name, post-nominals and job title are now filled in
+(`Alexandra Denton, ARM®`, Multi-Site Property Manager). Change them in the
+same file if any of it is wrong.
 
 ## Optional
 

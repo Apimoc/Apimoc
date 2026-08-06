@@ -37,6 +37,7 @@ const ROUTES = [
 ];
 
 const cssFiles = new Set();
+const inlineStyles = new Set();
 const scriptFiles = new Set();
 const inlineScripts = new Set();
 const pages = new Map();
@@ -48,6 +49,14 @@ for (const [route, file] of ROUTES) {
   $('link[rel="stylesheet"]').each((_, el) => {
     const href = $(el).attr("href");
     if (href?.startsWith("/")) cssFiles.add(join(DIST, href));
+  });
+
+  /* Astro inlines small stylesheets straight into <head> rather than
+     emitting a file. Collecting only the linked ones silently loses whole
+     page styles, which is how the journal ended up unstyled here. */
+  $("head style").each((_, el) => {
+    const code = $(el).html();
+    if (code?.trim()) inlineStyles.add(code.trim());
   });
 
   $("script[src]").each((_, el) => {
@@ -77,7 +86,10 @@ for (const [route, file] of ROUTES) {
 }
 
 /* --- CSS, with the fonts embedded ---------------------------------------- */
-let css = [...cssFiles].map((f) => readFileSync(f, "utf8")).join("\n");
+let css = [
+  ...[...cssFiles].map((f) => readFileSync(f, "utf8")),
+  ...inlineStyles,
+].join("\n");
 
 css = css.replace(/url\(\s*["']?(\/fonts\/[^"')]+)["']?\s*\)/g, (whole, path) => {
   const file = join(DIST, path);
@@ -217,6 +229,6 @@ writeFileSync(OUT, html);
 
 console.log(
   `\n  ${OUT}  ${(Buffer.byteLength(html) / 1024 / 1024).toFixed(2)} MB` +
-    `\n  ${pages.size} routes, ${cssFiles.size} stylesheets, ${scriptFiles.size} bundled + ${inlineScripts.size} inline scripts` +
+    `\n  ${pages.size} routes, ${cssFiles.size} linked + ${inlineStyles.size} inline stylesheets, ${scriptFiles.size} bundled + ${inlineScripts.size} inline scripts` +
     `\n  JS bundle ${(Buffer.byteLength(js) / 1024).toFixed(0)} kB uncompressed\n`,
 );
