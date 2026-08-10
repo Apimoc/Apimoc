@@ -24,18 +24,12 @@ const DIST = "dist";
 const ROUTES = [
   ["/", "dist/index.html"],
   ["/about", "dist/about/index.html"],
-  ["/services", "dist/services/index.html"],
-  ["/listings", "dist/listings/index.html"],
-  ["/listings/cherry-creek-townhome", "dist/listings/cherry-creek-townhome/index.html"],
-  ["/listings/wash-park-bungalow", "dist/listings/wash-park-bungalow/index.html"],
-  ["/listings/lohi-loft", "dist/listings/lohi-loft/index.html"],
-  ["/listings/sloans-lake-new-build", "dist/listings/sloans-lake-new-build/index.html"],
+  ["/cv", "dist/cv/index.html"],
   ["/consultation", "dist/consultation/index.html"],
   ["/blog", "dist/blog/index.html"],
   ["/blog/what-your-offer-says", "dist/blog/what-your-offer-says/index.html"],
   ["/blog/pricing-a-home", "dist/blog/pricing-a-home/index.html"],
   ["/blog/first-year-costs", "dist/blog/first-year-costs/index.html"],
-  ["/contact", "dist/contact/index.html"],
   ["/404", "dist/404.html"],
 ];
 

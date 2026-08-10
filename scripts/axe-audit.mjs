@@ -35,15 +35,26 @@ const audit = (page) =>
 const ROUTES = [
   "/",
   "/about",
-  "/services",
-  "/listings",
-  "/listings/cherry-creek-townhome",
+  "/cv",
   "/consultation",
   "/blog",
   "/blog/what-your-offer-says",
-  "/contact",
   "/404",
 ];
+
+/* The theme is chosen by localStorage, NOT by prefers-color-scheme: this is a
+   dark-first site and the OS preference is deliberately ignored, so passing
+   `colorScheme` to the browser context does nothing at all. Setting it that
+   way silently audited the dark theme twice and never once looked at light.
+   addInitScript runs before the pre-paint script, so the value is already
+   there when it reads it. */
+const withTheme = (theme) => async (context) => {
+  await context.addInitScript((value) => {
+    try {
+      localStorage.setItem("theme", value);
+    } catch (_) {}
+  }, theme);
+};
 
 const browser = await chromium.launch();
 let total = 0;
@@ -52,8 +63,8 @@ const failures = [];
 for (const theme of ["light", "dark"]) {
   const context = await browser.newContext({
     viewport: { width: 390, height: 844 },
-    colorScheme: theme,
   });
+  await withTheme(theme)(context);
   const page = await context.newPage();
 
   for (const route of ROUTES) {

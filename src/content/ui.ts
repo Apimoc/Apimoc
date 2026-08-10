@@ -30,7 +30,7 @@ export const ui = {
     closeMenu: "Close menu",
     menuLabel: "Site menu",
     /** The button at the right of the header. */
-    cta: "Book a consultation",
+    cta: "Contact me",
   },
 
   theme: {
@@ -50,7 +50,7 @@ export const ui = {
     copyright: "© %YEAR% %NAME%. All rights reserved.",
     exploreHeading: "Explore",
     connectHeading: "Connect",
-    tagline: "Superior living experiences for extraordinary customers.",
+    tagline: "Superior living experiences for extraordinary residents.",
   },
 
   /* --- Page headers -------------------------------------------------------
@@ -58,26 +58,16 @@ export const ui = {
      rather than typed into the page files, so every word on the site is
      still in one of two places. */
   pages: {
-    services: {
-      eyebrow: "What I do",
-      heading: "My services",
+    cv: {
+      eyebrow: "The record",
+      heading: "CV",
       standfirst:
-        "Four ways I work with clients. Most people need one of them. Some need two.",
-    },
-    listings: {
-      eyebrow: "On the market",
-      heading: "Featured listings",
-      standfirst:
-        "Everything currently listed, plus a few recent sales for reference.",
+        "Where I have worked, what I did there, and what I am qualified in.",
+      description: "Roles, education and credentials.",
     },
     consultation: {
-      eyebrow: "Let's talk",
-      heading: "Book a consultation",
-      standfirst: "Thirty minutes, at no cost, and no obligation at the end of it.",
-    },
-    contact: {
       eyebrow: "Say hello",
-      heading: "Get in touch",
+      heading: "Contact me",
       standfirst:
         "Tell me what you are looking for and I will come back to you within one business day.",
       description: "Get in touch by email, phone or through the form.",
@@ -88,7 +78,7 @@ export const ui = {
     blog: {
       eyebrow: "Field notes",
       heading: "Blog",
-      description: "Notes on buying, selling and the Denver market.",
+      description: "Notes on the work and the market.",
     },
   },
 
@@ -101,51 +91,34 @@ export const ui = {
 
   /* --- Calls to action --------------------------------------------------- */
   cta: {
-    exploreListings: "Explore listings",
-    viewAllListings: "View all listings",
-    viewListing: "View this listing",
+    myStory: "My story",
     moreAboutMe: "More about me",
-    allServices: "All services",
     readMore: "Read more",
     readAllPosts: "Read all posts",
-    bookConsultation: "Book a consultation",
-    getInTouch: "Get in touch",
+    contactMe: "Contact me",
+    viewCV: "See the full CV",
     downloadGuide: "Download the guide",
     emailMe: "Email %NAME%",
     callMe: "Call %NAME%",
-    backToListings: "All listings",
     backToBlog: "All posts",
-    backToServices: "All services",
     previous: "← Previous",
     next: "Next →",
     home: "Back to home",
   },
 
-  /* --- Listings ----------------------------------------------------------- */
-  listings: {
-    /** Status pills on a listing card. */
-    statusForSale: "For sale",
-    statusPending: "Pending",
-    statusSold: "Sold",
-    bedsLabel: "Beds",
-    bathsLabel: "Baths",
-    sqftLabel: "Sq ft",
-    priceLabel: "Price",
-    featuresHeading: "Features",
-    detailsHeading: "Details",
-    enquireHeading: "Interested in this property?",
-    enquireBody:
-      "Send me a message and I will get back to you with the full details and a viewing time that works.",
+  /* --- CV ------------------------------------------------------------------
+     The three groups, in the order they appear. `kind` matches the field of
+     the same name in each entry's frontmatter. */
+  cv: {
+    groups: [
+      { kind: "role", label: "Experience" },
+      { kind: "education", label: "Education" },
+      { kind: "credential", label: "Credentials" },
+    ],
     empty:
-      "No listings yet. Add one by copying src/content/listings/_template.mdx and editing the frontmatter.",
-    /** Screen reader text for the placeholder plate on a card with no photo. */
+      "No CV entries yet. Add one by copying src/content/cv/_template.mdx and editing the frontmatter.",
+    /** Screen reader text for the placeholder plate on a photo slot. */
     photoPending: "Photograph to come",
-  },
-
-  /* --- Services ----------------------------------------------------------- */
-  services: {
-    empty:
-      "No services yet. Add one by copying src/content/services/_template.mdx and editing the frontmatter.",
   },
 
   /* --- Testimonials -------------------------------------------------------- */
@@ -165,36 +138,37 @@ export const ui = {
     metaSeparator: " · ",
   },
 
-  /* --- Consultation --------------------------------------------------------
-     The booking page. It is a form rather than a third-party embed, so
-     nothing is loaded from another host. */
+  /* --- Contact page --------------------------------------------------------
+     Lives at /consultation and is the site's only contact route. It is a
+     form rather than a third-party embed, so nothing is loaded from another
+     host. */
   consultation: {
     stepsHeading: "How it works",
     steps: [
       {
-        title: "Tell me what you are looking for",
-        body: "Fill in the form below. The more you can tell me about your timeline and your budget, the more useful our first conversation will be.",
+        title: "Tell me what you need",
+        body: "Fill in the form below. The more you can tell me about the situation and the timeline, the more useful the first conversation will be.",
       },
       {
         title: "We talk it through",
-        body: "A thirty minute call, at no cost. I will be straight with you about what is realistic in the current market.",
+        body: "A short call, at no cost. I will be straight with you about what is realistic and what it would take.",
       },
       {
-        title: "We make a plan",
-        body: "If it is a fit, I will put together a plan for your search or your sale, with the numbers attached.",
+        title: "We agree what happens next",
+        body: "If it is a fit, I will put together a plan with the specifics attached. If it is not, I will say so.",
       },
     ],
     typeLabel: "What can I help with?",
-    typeBuying: "Buying",
-    typeSelling: "Selling",
-    typeBoth: "Both",
+    typeBuying: "A role or a position",
+    typeSelling: "A property that needs steadying",
+    typeBoth: "A question about my work",
     typeOther: "Something else",
     timelineLabel: "Your timeline",
     timelineOptions: [
       "As soon as possible",
       "Within three months",
       "Within six months",
-      "Just starting to look",
+      "Just making contact",
     ],
   },
 

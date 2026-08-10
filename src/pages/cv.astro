@@ -1,0 +1,197 @@
+---
+import { getCollection, render } from "astro:content";
+import Page from "../layouts/Page.astro";
+import { ui } from "../content/ui";
+import { features } from "../content/site";
+
+/**
+ * The CV. Three groups, one collection: `kind` on each entry decides which
+ * group it lands in, so adding an entry never means touching this file.
+ *
+ * Deliberately a fill-in template rather than real career data. Every entry
+ * in src/content/cv/ is a skeleton to be replaced.
+ */
+
+const all = await getCollection("cv", ({ data }) => !data.draft);
+
+const rendered = await Promise.all(
+  all
+    .sort((a, b) => a.data.order - b.data.order)
+    .map(async (entry) => ({
+      entry,
+      Content: (await render(entry)).Content,
+    })),
+);
+
+const groups = ui.cv.groups
+  .map((group) => ({
+    ...group,
+    items: rendered.filter(({ entry }) => entry.data.kind === group.kind),
+  }))
+  .filter((group) => group.items.length > 0);
+---
+
+<Page
+  title={ui.pages.cv.heading}
+  description={ui.pages.cv.description}
+  eyebrow={ui.pages.cv.eyebrow}
+  heading={ui.pages.cv.heading}
+  standfirst={ui.pages.cv.standfirst}
+>
+  <section class="band" aria-label={ui.pages.cv.heading}>
+    <div class="shell">
+      {groups.length === 0 ? (
+        <p class="empty">{ui.cv.empty}</p>
+      ) : (
+        groups.map((group) => (
+          <section class="group" data-reveal="block">
+            <h2 class="t-caption group-title">{group.label}</h2>
+
+            <ol class="entries">
+              {group.items.map(({ entry, Content }) => (
+                <li class="entry">
+                  <div class="period t-caption">{entry.data.period}</div>
+
+                  <div class="detail">
+                    <h3 class="t-h3 title">{entry.data.title}</h3>
+                    <p class="org">
+                      {entry.data.org}
+                      {entry.data.location && (
+                        <span class="place">{entry.data.location}</span>
+                      )}
+                    </p>
+
+                    {entry.data.summary && (
+                      <p class="summary">{entry.data.summary}</p>
+                    )}
+
+                    {entry.data.bullets.length > 0 && (
+                      <ul class="bullets">
+                        {entry.data.bullets.map((bullet) => (
+                          <li>{bullet}</li>
+                        ))}
+                      </ul>
+                    )}
+
+                    <div class="body"><Content /></div>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      )}
+
+      {features.consultation && (
+        <p class="center-cta">
+          <a class="btn" href="/consultation">{ui.cta.contactMe}</a>
+        </p>
+      )}
+    </div>
+  </section>
+</Page>
+
+<style>
+  .group + .group {
+    margin-top: clamp(3rem, 6vw, 5rem);
+  }
+
+  .group-title {
+    color: var(--brass);
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.65rem;
+    border-bottom: var(--hairline) solid var(--rule);
+  }
+
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .entry {
+    display: grid;
+    gap: 0.35rem 2.5rem;
+    padding-block: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .entry + .entry {
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  /* The period is set as a quiet column rather than inline with the title,
+     so the eye can run down the dates without reading every entry. */
+  .period {
+    color: var(--ink-muted);
+    padding-top: 0.35rem;
+  }
+
+  .title {
+    margin: 0;
+  }
+
+  .org {
+    margin: 0.2rem 0 0;
+    color: var(--ink-muted);
+  }
+
+  /* Decorative punctuation, drawn in CSS rather than put in the markup. In
+     the markup it would concatenate with the location into a single text
+     node that traces to no content file, and a screen reader reads the
+     organization and the place as two things regardless. */
+  .place::before {
+    content: " · ";
+  }
+
+  .summary {
+    margin: 0.85rem 0 0;
+    max-width: 60ch;
+  }
+
+  .bullets {
+    margin: 0.85rem 0 0;
+    padding: 0;
+    list-style: none;
+    max-width: 62ch;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .bullets li {
+    position: relative;
+    padding-left: 1.15rem;
+    color: var(--ink-muted);
+  }
+
+  .bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 0.45rem;
+    height: var(--hairline);
+    background: var(--brass);
+  }
+
+  .body :global(p) {
+    margin: 0.85rem 0 0;
+    max-width: 62ch;
+    color: var(--ink-muted);
+  }
+
+  .empty {
+    color: var(--ink-muted);
+    max-width: 60ch;
+  }
+
+  .center-cta {
+    margin: clamp(3rem, 6vw, 5rem) 0 0;
+    text-align: center;
+  }
+
+  @media (min-width: 48rem) {
+    .entry {
+      grid-template-columns: 9rem minmax(0, 1fr);
+    }
+  }
+</style>

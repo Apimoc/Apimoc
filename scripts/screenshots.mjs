@@ -16,13 +16,10 @@ const THEMES = ["light", "dark"];
 const ROUTES = [
   ["home", "/"],
   ["about", "/about"],
-  ["services", "/services"],
-  ["listings", "/listings"],
-  ["listing-detail", "/listings/cherry-creek-townhome"],
-  ["consultation", "/consultation"],
+  ["cv", "/cv"],
+  ["contact", "/consultation"],
   ["blog", "/blog"],
   ["blog-post", "/blog/what-your-offer-says"],
-  ["contact", "/contact"],
   ["404", "/404"],
 ];
 
@@ -39,9 +36,19 @@ for (const theme of THEMES) {
     const context = await browser.newContext({
       viewport: { width, height: Math.round(width * 0.9) + 300 },
       deviceScaleFactor: 1,
-      colorScheme: theme,
       reducedMotion: "no-preference",
     });
+
+    /* The theme comes from localStorage, NOT from prefers-color-scheme: this
+       is a dark-first site and the OS preference is deliberately ignored, so
+       passing `colorScheme` here does nothing. It silently produced 40 "light"
+       screenshots that were all dark. addInitScript runs before the pre-paint
+       script, so the value is set by the time it reads it. */
+    await context.addInitScript((value) => {
+      try {
+        localStorage.setItem("theme", value);
+      } catch (_) {}
+    }, theme);
 
     const page = await context.newPage();
     page.on("console", (msg) => {

@@ -15,7 +15,6 @@ export type HomeSectionId =
   | "panels"
   | "figures"
   | "guidebook"
-  | "listings"
   | "whyWorkWithMe"
   | "testimonials"
   | "blog"
@@ -33,7 +32,6 @@ export const homeSections: HomeSection[] = [
   { id: "panels", enabled: true },
   { id: "figures", enabled: true },
   { id: "guidebook", enabled: true },
-  { id: "listings", enabled: true },
   { id: "whyWorkWithMe", enabled: true },
   { id: "testimonials", enabled: true },
   { id: "blog", enabled: true },
@@ -69,12 +67,10 @@ export const motion = {
 } as const;
 
 /* --------------------------------------------------------------------------
-   LISTINGS
+   LANDING PAGE FEEDS
    -------------------------------------------------------------------------- */
 
-export const listingsConfig = {
-  /** How many featured listings the landing page shows. */
-  featuredOnHome: 3,
+export const feedConfig = {
   /** How many blog posts the landing page shows. */
   postsOnHome: 3,
 } as const;

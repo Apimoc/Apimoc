@@ -5,10 +5,9 @@ import SectionHead from "../components/SectionHead.astro";
 import Pillars from "../components/Pillars.astro";
 import Figures from "../components/Figures.astro";
 import Figure from "../components/Figure.astro";
-import ListingCard from "../components/ListingCard.astro";
 import Testimonials from "../components/Testimonials.astro";
 import EmailLink from "../components/EmailLink.astro";
-import { activeHomeSections, listingsConfig } from "../content/theme";
+import { activeHomeSections, feedConfig } from "../content/theme";
 import { assets, identity, contact, isPlaceholder } from "../content/site";
 import { ui, fill } from "../content/ui";
 import { formatDateLong, isoDate } from "../lib/format";
@@ -30,7 +29,6 @@ const about = by.get("about");
 const panels = by.get("panels");
 const figures = by.get("figures");
 const guidebook = by.get("guidebook");
-const listingsIntro = by.get("listings");
 const whyWork = by.get("whyWorkWithMe");
 const testimonialsIntro = by.get("testimonials");
 const blogIntro = by.get("blog");
@@ -40,14 +38,9 @@ const AboutBody = about ? (await render(about)).Content : null;
 const GuidebookBody = guidebook ? (await render(guidebook)).Content : null;
 const CtaBody = cta ? (await render(cta)).Content : null;
 
-const featured = (await getCollection("listings", ({ data }) => !data.draft))
-  .filter((l) => l.data.featured)
-  .sort((a, b) => a.data.order - b.data.order)
-  .slice(0, listingsConfig.featuredOnHome);
-
 const posts = (await getCollection("blog", ({ data }) => !data.draft))
   .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
-  .slice(0, listingsConfig.postsOnHome);
+  .slice(0, feedConfig.postsOnHome);
 
 const shortName = isPlaceholder(identity.shortName) ? "" : identity.shortName;
 const hasEmail = !isPlaceholder(contact.emailUser);
@@ -91,7 +84,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
                   </h1>
                   <div class="hero-actions" data-reveal="block">
                     {hero?.data.ctaLabel && (
-                      <a class="btn" href={hero.data.ctaHref ?? "/listings"}>
+                      <a class="btn" href={hero.data.ctaHref ?? "/about"}>
                         {hero.data.ctaLabel}
                       </a>
                     )}
@@ -213,7 +206,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
                   </div>
                   {guidebook?.data.ctaLabel && (
                     <p class="more-btn" data-reveal="block">
-                      <a class="btn" href={guidebook.data.ctaHref ?? "/contact"}>
+                      <a class="btn" href={guidebook.data.ctaHref ?? "/consultation"}>
                         {guidebook.data.ctaLabel}
                       </a>
                     </p>
@@ -228,28 +221,6 @@ const hasEmail = !isPlaceholder(contact.emailUser);
                     sizes="(min-width: 48rem) 20rem, 60vw"
                   />
                 </div>
-              </div>
-            </section>
-          );
-
-        case "listings":
-          return (
-            <section class="band" aria-label={listingsIntro?.data.heading}>
-              <div class="shell">
-                <SectionHead
-                  eyebrow={listingsIntro?.data.eyebrow}
-                  heading={listingsIntro?.data.heading}
-                />
-                <div class="listing-grid" data-reveal="rows">
-                  {featured.map((listing) => (
-                    <ListingCard listing={listing} />
-                  ))}
-                </div>
-                <p class="center-cta">
-                  <a class="btn btn-ghost" href="/listings">
-                    {ui.cta.viewAllListings}
-                  </a>
-                </p>
               </div>
             </section>
           );
@@ -519,8 +490,7 @@ const hasEmail = !isPlaceholder(contact.emailUser);
     justify-self: center;
   }
 
-  /* --- Listings and posts -------------------------------------------------- */
-  .listing-grid,
+  /* --- Post grid ------------------------------------------------------------ */
   .post-grid {
     display: grid;
     gap: clamp(1.5rem, 3vw, 2.5rem);
@@ -607,7 +577,6 @@ const hasEmail = !isPlaceholder(contact.emailUser);
       justify-self: end;
     }
 
-    .listing-grid,
     .post-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }

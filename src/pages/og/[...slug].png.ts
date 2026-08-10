@@ -28,29 +28,28 @@ export const getStaticPaths = (async () => {
       params: { slug: "default" },
       props: { heading: siteName(), eyebrow: role(), footer: role() },
     },
+    /* Headings come from ui.pages rather than being typed here, so an OG card
+       can never drift from the page it represents. The About card is the one
+       exception: that page takes its heading from the About content file. */
     {
       params: { slug: "about" },
-      props: { heading: "About", eyebrow: siteName(), footer: role() },
+      props: { heading: ui.cta.moreAboutMe, eyebrow: siteName(), footer: role() },
     },
     {
-      params: { slug: "services" },
-      props: { heading: "My services", eyebrow: siteName(), footer: role() },
-    },
-    {
-      params: { slug: "listings" },
-      props: { heading: "Featured listings", eyebrow: siteName(), footer: role() },
+      params: { slug: "cv" },
+      props: { heading: ui.pages.cv.heading, eyebrow: siteName(), footer: role() },
     },
     {
       params: { slug: "consultation" },
-      props: { heading: "Book a consultation", eyebrow: siteName(), footer: role() },
+      props: {
+        heading: ui.pages.consultation.heading,
+        eyebrow: siteName(),
+        footer: role(),
+      },
     },
     {
       params: { slug: "blog" },
-      props: { heading: "Blog", eyebrow: siteName(), footer: role() },
-    },
-    {
-      params: { slug: "contact" },
-      props: { heading: "Contact", eyebrow: siteName(), footer: role() },
+      props: { heading: ui.pages.blog.heading, eyebrow: siteName(), footer: role() },
     },
   ];
 
@@ -62,18 +61,6 @@ export const getStaticPaths = (async () => {
         heading: post.data.title,
         eyebrow: siteName(),
         footer: formatDateLong(post.data.pubDate),
-      },
-    });
-  });
-
-  const listings = await getCollection("listings", ({ data }) => !data.draft);
-  listings.forEach((item) => {
-    paths.push({
-      params: { slug: `listings/${item.id}` },
-      props: {
-        heading: item.data.title,
-        eyebrow: siteName(),
-        footer: item.data.location,
       },
     });
   });

@@ -13,7 +13,7 @@ score. Both are shown rather than only the flattering one.
 
 | | As it stands | With `site.ts` filled in |
 |---|---|---|
-| Performance | **97 to 100** | **99** |
+| Performance | **99** | **99** |
 | Accessibility | **100** | **100** |
 | Best practices | **100** | **100** |
 | SEO | **69** | **100** |
@@ -26,11 +26,10 @@ SEO measures 69 only because `siteUrlIsReal` is `false`, which sets `noindex`
 and disallows crawling on purpose. The single failing audit is `is-crawlable`.
 Filling in `src/content/site.ts` takes it to 100 with no code change.
 
-Performance is given as a range because that is what it measures. Two
-consecutive runs on an idle container returned 97 and 100. A third run taken
-while an 80-shot screenshot job was saturating the CPU returned **91**, which
-is a fact about the container, not about the site. Any single number here would
-be a run selected to suit the story.
+Performance measures 99 on both of two consecutive runs on an idle container.
+Worth recording: an earlier run taken while a screenshot job was saturating the
+CPU returned **91**. That is a fact about the container, not about the site,
+and it is the reason every number here comes from an idle machine.
 
 ### Core Web Vitals
 
@@ -38,17 +37,20 @@ Two clean runs, so the spread is visible rather than averaged away:
 
 | Metric | Target | Run 1 | Run 2 |
 |---|---|---|---|
-| FCP | | 1.5 s | **1.2 s** |
-| LCP | under 2.0 s | 2.1 s | **1.7 s** |
+| FCP | | 1.4 s | **1.2 s** |
+| LCP | under 2.0 s | 2.1 s | **1.8 s** |
 | CLS | under 0.05 | **0** | **0** |
-| Speed Index | | 2.7 s | **1.2 s** |
-| TBT | proxy for INP | 90 ms | **40 ms** |
+| Speed Index | | 1.4 s | **1.2 s** |
+| TBT | proxy for INP | 30 ms | **40 ms** |
 
 LCP sits on the 2.0 s target rather than comfortably under it. The hero loads
 the portrait eagerly, which is correct for an image that large and that far
 above the fold, and it is served responsively: the srcset runs 320w / 640w /
 960w / 1122w, so a 390 px phone at 2× fetches the 640w variant at 23 kB, not
 the full 54 kB original.
+
+The 13/13 contact-handler suite, the 10/10 browser suite, the contrast table
+and the string trace all re-ran unchanged after the restructure.
 
 **CLS is 0, and it was 0 before the portrait existed too.** That is the payoff
 from routing every photograph through one `Figure` component: the slot reserves
@@ -73,11 +75,36 @@ axe-core: 0 violations across all routes, both themes.
 Total violations: 0
 ```
 
-Ten routes (`/`, `/about`, `/services`, `/listings`, `/listings/[slug]`,
-`/consultation`, `/blog`, `/blog/[slug]`, `/contact`, `/404`), in light and
-dark, plus the mobile menu in its open state.
+Seven routes (`/`, `/about`, `/cv`, `/consultation`, `/blog`, `/blog/[slug]`,
+`/404`), in light and dark, plus the mobile menu in its open state.
 
-**The ruleset was widened during this pass**, and that is the interesting part.
+### The light theme had never actually been audited
+
+Worth stating plainly, because the earlier version of this document claimed
+otherwise. Both `axe-audit.mjs` and `screenshots.mjs` selected the theme by
+passing `colorScheme` to the Playwright context, which sets
+`prefers-color-scheme`. **This site deliberately ignores that**: it is
+dark-first, `:root` holds the dark palette, and only an explicit choice in
+`localStorage` switches to light. So the "light" pass rendered dark, the "dark"
+pass rendered dark, and every "light" screenshot was a dark one.
+
+The audit reported "0 violations, both themes" and the number was true; the
+label was not. Both scripts now set `localStorage.theme` from an
+`addInitScript`, which runs before the pre-paint script reads it. Verified by
+asserting the resulting `data-theme` and body background differ between the two
+passes:
+
+```
+light => data-theme=light  bg=rgb(239, 232, 218)
+dark  => data-theme=dark   bg=rgb(20, 17, 15)
+```
+
+Re-run on that footing, the light theme also returns **0 violations**. The
+contrast table below had been measuring the light tokens correctly all along,
+which is why nothing was hiding there.
+
+**The ruleset was also widened during this pass**, and that is the other
+interesting part.
 The audit originally ran `wcag2a` through `wcag22aa` and reported 0. Lighthouse
 then reported two accessibility failures on the same build. Both were real, and
 both were invisible to the audit because of how axe packages its rules:
@@ -97,10 +124,11 @@ rather than by a second tool that happened to be run.
    the hero sit in a band with no visible heading, so their `<h3>` titles were
    the first thing under the `<h1>`. `Pillars.astro` now takes a `level` prop
    and that band passes `2`.
-2. **The same bug on `/listings`.** No section heading stands between the page
-   `<h1>` and the card grid, so `ListingCard` got the same prop. Found by a
-   heading-order sweep over all 15 built pages, not by Lighthouse, which only
-   audited the home page.
+2. **The same bug on the listings index**, which existed at the time. No
+   section heading stood between the page `<h1>` and the card grid. Found by a
+   heading-order sweep over every built page, not by Lighthouse, which only
+   audited the home page. That route has since been removed, but the sweep
+   stayed and still runs on every build.
 3. **The header logotype failed SC 2.5.3, Label in Name.** It carried
    `aria-label="Home"` over visible text reading "Top Real Estate by Sarah
    Brown". A voice-control user saying what they can read would not activate
@@ -113,8 +141,8 @@ rather than by a second tool that happened to be run.
    has its own label.
 
 One further finding, from the widened ruleset:
-`landmark-complementary-is-top-level` on `/contact` and the single listing
-page. Both used `<aside>` inside `<main>`. Neither is tangential content: the
+`landmark-complementary-is-top-level` on the contact page and the single
+listing page that existed then. Both used `<aside>` inside `<main>`. Neither is tangential content: the
 listing's feature list is part of the listing, and the contact page's direct
 details are a second way to do what the page is for. Both are now `<div>`, and
 their `<h2>` still puts them in the heading outline.
@@ -124,7 +152,7 @@ their `<h2>` still puts them in the heading outline.
 Swept over the built HTML:
 
 ```
-Heading order clean on all 15 pages, exactly one h1 each.
+Heading order clean on all 9 pages, exactly one h1 each.
 ```
 
 ---
@@ -161,7 +189,7 @@ Dark `--umber` measures 1.49:1 and is **exempt, not failing**: SC 1.4.11 covers
 components a user must perceive to operate, and this token is used only for
 decorative hairlines. Everything operable resolves to `--line-ui`, which is
 `--ink-muted` in dark at 7.00:1. Verified on the form field borders on
-`/contact`.
+`/consultation`.
 
 ---
 
@@ -173,9 +201,9 @@ npm run audit:budget
 
 | Route | Eager JS, gzipped | Budget |
 |---|---|---|
-| `/contact`, `/consultation` | 11.5 kB | pass |
-| `/blog`, `/listings` | 8.8 to 8.9 kB | pass |
-| every other route | 8.6 kB | pass |
+| `/consultation` | 11.3 kB | pass |
+| `/blog` | 8.8 kB | pass |
+| every other route | 8.5 kB | pass |
 
 Budget is 50 kB. **Before optimization every route measured 54.6 kB**, over
 budget, because GSAP, ScrollTrigger and SplitText were statically imported by
@@ -215,7 +243,7 @@ pass  home page is fully keyboard traversable             21 stops / 37 elements
 pass  contact form: validation announced, blocks send     summary shown, aria-describedby set
 pass  contact form: valid message posts and confirms      success shown, fields cleared
 pass  contact form: honeypot hidden from AT               tabindex=-1, aria-hidden=true
-pass  no horizontal scroll, 320/390/768/1280/1920         all clear, 10 routes x 5 widths
+pass  no horizontal scroll, 320/390/768/1280/1920         all clear, 7 routes x 5 widths
 
 10/10 passed
 ```
@@ -341,7 +369,7 @@ announces them, so they are presentation rather than copy.
 npm run shots -- http://localhost:4330
 ```
 
-80 files in `screenshots/`: 10 routes × 4 widths (390, 768, 1280, 1920) × 2
+56 files in `screenshots/`: 7 routes × 4 widths (390, 768, 1280, 1920) × 2
 themes. Full-page, with the page scrolled through first so scroll reveals have
 fired, then scrolled back. `No console errors.`
 
@@ -380,19 +408,19 @@ surface something, and the one this environment cannot stand in for.
 
 | Requirement | Status |
 |---|---|
-| Lighthouse mobile 95+ / 100 / 100 / 100 | **97-100 / 100 / 100 / 69**; **99 / 100 / 100 / 100** configured |
-| LCP under 2.0 s | **1.7 to 2.1 s**, on the line |
+| Lighthouse mobile 95+ / 100 / 100 / 100 | **99 / 100 / 100 / 69**; **99 / 100 / 100 / 100** configured |
+| LCP under 2.0 s | **1.8 to 2.1 s**, on the line |
 | CLS under 0.05 | **0** |
 | INP under 200 ms | TBT 130 ms; true INP needs field data |
-| axe-core zero violations | **0**, 10 routes × 2 themes, widened ruleset |
-| Heading order, one h1 per page | **clean on all 15 built pages** |
+| axe-core zero violations | **0**, 7 routes × 2 themes, widened ruleset |
+| Heading order, one h1 per page | **clean on all 9 built pages** |
 | Contrast floors met | **all pairs pass**, lowest 5.07:1 |
-| Screenshots 390/768/1280/1920, both themes | **80 files** |
+| Screenshots 390/768/1280/1920, both themes | **56 files** |
 | No flash of incorrect theme | **verified**, both system settings |
 | Full keyboard traversal | **verified**, incl. menu and toggle |
-| No horizontal scroll to 320 px | **verified**, 10 routes × 5 widths |
+| No horizontal scroll to 320 px | **verified**, 7 routes × 5 widths |
 | Contact form: send, validation, spam | **13/13 on the handler**; live send needs credentials |
 | Build fails clearly on bad frontmatter | **verified** |
 | Every string in a content file | **verified from the build output** |
-| JS under 50 kB per route | **8.6 kB**, 11.5 kB on the two form pages |
+| JS under 50 kB per route | **8.5 kB**, 11.3 kB on the contact page |
 | Renders in Chrome/Safari/Firefox/Edge/iOS | **Chromium only**; see above |

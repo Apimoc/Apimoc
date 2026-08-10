@@ -34,10 +34,10 @@ file if any of it is wrong.
 
 | Value | Currently |
 |---|---|
-| `identity.fullName` | Sarah Brown |
-| `identity.shortName` | Sarah |
-| `identity.signature` | Sarah B. |
-| `identity.brand` | Top Real Estate |
+| `identity.fullName` | Alexandra Denton |
+| `identity.shortName` | Alexandra |
+| `identity.signature` | Alexandra D. |
+| `identity.brand` | Alexandra Denton |
 | `identity.jobTitle` | Real Estate Specialist |
 | `identity.location` | Denver, Colorado |
 
@@ -59,17 +59,8 @@ name to change it; nothing else needs editing.
 | `assets.hero` | `src/assets/hero.jpg` | Then set `heroReady: true` |
 | `assets.guidebook` | `src/assets/guidebook.jpg` | Then set `guidebookReady: true` |
 
-**The phone number is required here, unlike the earlier version of this site.**
-A real estate agent who cannot be called is a real estate agent who does not get
-the listing. Leaving it as `TODO:` is still safe: it is simply omitted
-everywhere rather than published half-finished.
-
-### Listing photographs
-
-The four listings under `src/content/listings/` each name their photos in the
-`images` field. Those files are not supplied either. Each unfilled slot draws
-a plate at the right aspect ratio, so the gallery is already the shape it will
-be. `CONTENT.md` covers adding them.
+Leaving the phone as `TODO:` is safe: it is omitted everywhere rather than
+published half-finished, and the contact form still works without it.
 
 ## Optional
 
@@ -79,7 +70,7 @@ be. `CONTENT.md` covers adding them.
 | `contact.instagram` | `site.ts` | The link is not rendered |
 | `contact.facebook` | `site.ts` | The link is not rendered |
 | `contact.office` | `site.ts` | The address block is omitted from the contact page |
-| `seo.worksFor` | `site.ts` | The brokerage field is omitted from JSON-LD |
+| `seo.worksFor` | `site.ts` | The employer field is omitted from JSON-LD |
 | `features.analyticsToken` | `site.ts` | No analytics. Cloudflare Web Analytics is cookieless |
 | `assets.portraitAlt` | `site.ts` | Needed once a portrait exists, for screen readers |
 
@@ -115,22 +106,25 @@ page has real text in it, taken from the template the design follows. What is
 placeholder is the factual detail behind it.
 
 ```
-src/content/home/         11 files, one per landing page section
-src/content/services/     buying, selling, investment, relocation
-src/content/listings/     4 example listings
+src/content/home/         10 files, one per landing page section
+src/content/cv/           6 blank entries: 3 roles, 1 education, 2 credentials
 src/content/testimonials/ 4 example testimonials
 src/content/blog/         3 example posts
 ```
 
-The listings, testimonials and blog posts are **examples with the right shape,
-not real records**. Read them before launch and either replace them with real
-ones or delete them. Two in particular need attention:
+**The CV is deliberately blank.** Every entry under `src/content/cv/` is a
+fill-in skeleton reading "Most recent role title", "Organization name" and
+"Replace this line". That is what was asked for: the structure, not invented
+career history.
+
+The testimonials and blog posts are **examples with the right shape, not real
+records**. Read them before launch and either replace them or delete them. One
+needs attention above the others:
 
 - **Testimonials name real-sounding clients.** Publishing a testimonial that
   nobody gave is a straightforward misrepresentation, and in the US it is one
   the FTC has rules about. Replace all four with real quotes, with permission,
   or delete the section from `src/content/theme.ts`.
-- **Listings quote prices, addresses and square footage.** All invented.
 
 Each folder also holds a `_template.mdx` with instructions in it. Files whose
 name starts with an underscore are ignored by the build, so a template can

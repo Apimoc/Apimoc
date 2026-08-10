@@ -189,7 +189,9 @@ for (const scheme of ["light", "dark"]) {
 {
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const page = await context.newPage();
-  await page.goto(`${BASE}/contact`, { waitUntil: "networkidle" });
+  // /consultation is the only contact route; the standalone /contact page
+  // was removed when the two were merged into one "Contact me" page.
+  await page.goto(`${BASE}/consultation`, { waitUntil: "networkidle" });
 
   // Empty submit surfaces errors and does not post.
   let posted = false;
@@ -263,13 +265,10 @@ for (const scheme of ["light", "dark"]) {
   const ROUTES = [
   "/",
   "/about",
-  "/services",
-  "/listings",
-  "/listings/cherry-creek-townhome",
+  "/cv",
   "/consultation",
   "/blog",
   "/blog/what-your-offer-says",
-  "/contact",
   "/404",
 ];
   const offenders = [];

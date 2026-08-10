@@ -26,17 +26,20 @@ export function isPlaceholder(value: string | undefined | null): boolean {
    -------------------------------------------------------------------------- */
 
 export const identity = {
-  /** The agent's name. Appears in the logotype, the hero script and the footer. */
-  fullName: "Sarah Brown",
+  /** The name. Appears in the logotype, the hero script and the footer. */
+  fullName: "Alexandra Denton",
 
   /** Informal short form, used in the calls to action. */
-  shortName: "Sarah",
+  shortName: "Alexandra",
 
   /** How the signature under the About copy reads. */
-  signature: "Sarah B.",
+  signature: "Alexandra D.",
 
-  /** The brand line above the name in the logotype. */
-  brand: "Top Real Estate",
+  /**
+   * The logotype text. This is the name rather than a company, so the
+   * logotype is a single line: there is no second line under it.
+   */
+  brand: "Alexandra Denton",
 
   /** Job title. Used in the meta description and JSON-LD. */
   jobTitle: "Real Estate Specialist",
@@ -76,7 +79,7 @@ export const assets = {
    */
   portraitReady: true,
   portraitAlt:
-    "Sarah Brown, seated in an armchair in a black blazer over a white top, smiling toward the camera",
+    "Alexandra Denton, seated in an armchair in a black blazer over a white top, smiling toward the camera",
 
   /** The hero background photograph, at src/assets/hero.jpg. */
   heroReady: false,
@@ -104,10 +107,8 @@ export const siteUrlIsReal = false;
 export const nav = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Services", href: "/services" },
-  { label: "Listings", href: "/listings" },
+  { label: "CV", href: "/cv" },
   { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
 ] as const;
 
 /* --------------------------------------------------------------------------
@@ -118,7 +119,11 @@ export const features = {
   /** The blog. Set false to hide the route and drop it from the nav. */
   blog: true,
 
-  /** The consultation booking page, linked from the header button. */
+  /**
+   * The contact page at /consultation, linked from the header button. It is
+   * the only contact route: the standalone /contact page was removed, so
+   * switching this off leaves no way to make contact through the site.
+   */
   consultation: true,
 
   /** Smooth scrolling, desktop pointer devices only, never on touch. */
@@ -136,18 +141,21 @@ export const features = {
 
 export const seo = {
   titleTemplate: "%s · " + identity.brand,
-  defaultTitle: `${identity.brand} by ${identity.fullName}`,
+  /* The logotype is already the full name, so the old
+     "%BRAND% by %NAME%" pattern would read "Alexandra Denton by
+     Alexandra Denton". */
+  defaultTitle: `${identity.fullName} · ${identity.jobTitle}`,
   defaultDescription:
-    "Real estate specialist in Denver, Colorado. Superior living experiences for extraordinary customers.",
+    "Superior living experiences for extraordinary residents. Denver, Colorado.",
   knowsAbout: [
-    "Residential real estate",
-    "Home buying",
-    "Home selling",
-    "Property valuation",
-    "Denver real estate market",
+    "Property management",
+    "Resident relations",
+    "Leasing and occupancy",
+    "Affordable housing compliance",
+    "Denver housing market",
   ],
-  /** Brokerage or agency. Leave as TODO to omit the field. */
-  worksFor: "TODO: brokerage name, or leave as TODO to omit",
+  /** Employer or agency. Leave as TODO to omit the field. */
+  worksFor: "TODO: employer name, or leave as TODO to omit",
 } as const;
 
 /* --------------------------------------------------------------------------

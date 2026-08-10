@@ -1,8 +1,8 @@
-# Real estate agent website
+# Personal site for Alexandra Denton
 
-A ten-page site for a residential real estate agent: services, listings, a
-consultation booking page, an about page, a blog, and a contact form. Static,
-self-hosted fonts, no third-party trackers, deployed to Cloudflare Pages.
+A personal site: a landing page, an about page, a CV, a blog, and a contact
+form. Static, self-hosted fonts, no third-party trackers, deployed to
+Cloudflare Pages.
 
 The layout, copy and section structure are finished, and the portrait is in
 place. What is not filled in is the personal detail: email address, phone,
@@ -41,23 +41,27 @@ and fails with a plain-English message if a content file has a bad field.
 
 ---
 
-## The ten pages
+## The pages
 
 | Route | What it is |
 |---|---|
-| `/` | Landing page. Eleven sections, reorderable from one array |
-| `/services` | The four services, each with its own file |
-| `/listings` | Featured listings index |
-| `/listings/[slug]` | A single listing, with specs, gallery and enquiry link |
-| `/consultation` | Booking form: enquiry type, timeline, message |
-| `/about` | Longer biography, the figures, credentials |
-| `/contact` | Form, email, phone, office address, social links |
+| `/` | Landing page. Ten sections, reorderable from one array |
+| `/about` | Longer biography and the figures |
+| `/cv` | Experience, education and credentials, grouped automatically |
+| `/consultation` | The contact page. Form, plus email, phone and social links |
 | `/blog` | Post index with tag filtering |
 | `/blog/[slug]` | A post |
 | `/404` | Not found |
 
 Plus `/blog/rss.xml`, `/robots.txt`, `/sitemap-index.xml`, and a generated
 Open Graph image per page under `/og/`.
+
+**There is one contact route, not two.** The page lives at `/consultation` and
+is titled "Contact me"; the header button points at it. The standalone
+`/contact` page was removed. If you would rather the URL matched the title,
+renaming the file to `src/pages/contact.astro` is the whole job: nothing links
+to it by a hardcoded path except `ui.header.cta`'s target and the two CTAs in
+`src/content/home/`.
 
 ---
 
@@ -87,7 +91,7 @@ src/
     theme.ts           home page section order, motion, listing counts
     ui.ts              button labels, empty states, form errors, page headings
     home/              one MDX file per landing page section
-    services/ listings/ testimonials/ blog/    MDX
+    cv/ testimonials/ blog/                    MDX
   content.config.ts  Zod 4 schemas, with messages a non-developer can act on
   styles/
     tokens.css         the ONLY file containing a hex color
@@ -285,8 +289,8 @@ Lighthouse mobile, home page, served with compression as Cloudflare does:
 | Accessibility | 100 |
 | Best practices | 100 |
 | CLS | 0 |
-| axe-core violations | 0, across 10 routes in both themes |
-| JavaScript per route | 8.6 kB gzipped, against a 50 kB budget |
+| axe-core violations | 0, across 7 routes in both themes |
+| JavaScript per route | 8.5 kB gzipped, against a 50 kB budget |
 | Contrast | every pair passes; lowest is 5.07:1 against a 4.5:1 floor |
 
 Full detail, including why the SEO score is currently held down on purpose, is

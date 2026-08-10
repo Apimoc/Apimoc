@@ -1,0 +1,39 @@
+---
+# HOW TO ADD A CV ENTRY
+# 1. Copy this file into the same folder.
+# 2. Rename it to something short ending .mdx, for example
+#    multi-site-manager.mdx. The name is never shown; it only keeps the
+#    files apart.
+# 3. Fill in the fields, write the optional paragraph underneath, save.
+#
+# Files starting with an underscore are ignored, so this one never publishes.
+
+title: Job title, degree, or credential name
+org: Employer, school, or awarding body
+
+# Leave this line out for a credential that has no place attached to it.
+location: City, ST
+
+# Exactly one of: role, education, credential
+# This decides which group on the page the entry lands in.
+kind: role
+
+# Free text. "2019 to present", "2016 to 2019", "2014" all work.
+period: "2019 to present"
+
+# One line under the title. Optional.
+summary: One sentence on what this was.
+
+# What you did. One line each. Lead with the thing, not with "Responsible for".
+bullets:
+  - Something you did, with the number attached to it.
+  - Something you changed, and what it moved from and to.
+  - Something you built or fixed that outlasted you.
+
+# Lower numbers come first within the group.
+order: 1
+draft: false
+---
+
+An optional paragraph. Most entries do not need one; the bullets usually say
+it better. Use this when an entry needs context the bullets cannot carry.

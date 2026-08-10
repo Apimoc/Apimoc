@@ -9,7 +9,7 @@ There are three sources, and it matters which is which:
 |---|---|
 | **Template** | Taken from the Squarespace real estate template this design follows, as requested |
 | **Mine** | Written for this build because the section needed words and the template had none |
-| **Example** | Invented records with the right shape: listings, testimonials, blog posts |
+| **Example** | Invented records with the right shape: testimonials, blog posts |
 
 ---
 
@@ -33,10 +33,14 @@ not a taste problem. See section 6.
 
 ### Hero, `home/hero.mdx` — **Template**
 
-> **Sarah Brown**
-> Superior living experiences for extraordinary customers
-> Explore listings
+> **Alexandra Denton**
+> Superior living experiences for extraordinary residents
+> My story
 > Scroll down to see more
+
+"Residents" replaced "customers" here and everywhere else on the landing page,
+which changes what the site claims to be: a resident is somebody who lives in a
+place you run, not somebody you sold a house to.
 
 ### The three pillars, `home/pillars.mdx` — **Template**
 
@@ -52,7 +56,7 @@ Also used at the top of `/about`.
 
 > **About me · Meet your real estate specialist**
 >
-> Hello, I'm Sarah Brown, your dedicated real estate professional based in
+> Hello, I'm Alexandra Denton, your dedicated real estate professional based in
 > Denver, Colorado.
 >
 > With a genuine passion for creating meaningful connections and turning
@@ -68,8 +72,8 @@ My Expertise and Work Ethic, both verbatim from the template.
 | | | |
 |---|---|---|
 | 12+ | Years of Professional | *experience* |
-| 1K+ | Customers Served | *with success* |
-| 99% | Satisfaction Rate | *of my clients* |
+| 1K+ | Residents Served | *with success* |
+| 99% | Satisfaction Rate | *of my residents* |
 
 **These three numbers are the most important thing in this document.** They are
 the template's demo figures. They are presented on the site as statements of
@@ -91,8 +95,9 @@ Replace all three with real numbers, or delete the section by setting
 > guide walks you through every stage of a purchase, from the first showing to
 > the closing table.
 
-**There is no guidebook.** The button points at the contact page. Either write
-the guide and wire the download up, or turn the section off.
+**There is no guidebook**, and it is a *home buying* guide on a site that no
+longer sells homes. The button points at the contact page. Either write
+something that fits, or turn the section off in `src/content/theme.ts`.
 
 ### Why work with me, `home/whyWorkWithMe.mdx` — **Mine**
 
@@ -111,13 +116,12 @@ one voice for the whole page.
 
 | Section | Text |
 |---|---|
-| Listings | Featured · Currently on the market |
 | Testimonials | Kind words · What my clients say |
 | Blog | From the blog · Notes on the market |
 | Closing | Let's talk · Let's start making your move |
 
-> Whether you are buying your first home or listing one you have loved for
-> years, the first conversation costs nothing and usually saves time.
+> Whether you are looking for somewhere to live or someone to run the place you
+> own, the first conversation costs nothing and usually saves time.
 
 ---
 
@@ -127,14 +131,13 @@ one voice for the whole page.
 
 | Page | Eyebrow | Heading | Standfirst |
 |---|---|---|---|
-| Services | What I do | My services | Four ways I work with clients. Most people need one of them. Some need two. |
-| Listings | On the market | Featured listings | Everything currently listed, plus a few recent sales for reference. |
-| Consultation | Let's talk | Book a consultation | Thirty minutes, at no cost, and no obligation at the end of it. |
-| Contact | Say hello | Get in touch | Tell me what you are looking for and I will come back to you within one business day. |
+| CV | The record | CV | Where I have worked, what I did there, and what I am qualified in. |
+| Contact | Say hello | Contact me | Tell me what you are looking for and I will come back to you within one business day. |
 | Blog | Field notes | Blog | |
 
-Two of these make promises. "Thirty minutes, at no cost" and "within one
-business day" are commitments to a stranger. Change them if either is wrong.
+"Within one business day" is a commitment to a stranger. Change it if it is
+wrong. It appears twice, in the contact standfirst and in the form's success
+message, so change both together.
 
 ---
 
@@ -144,9 +147,9 @@ business day" are commitments to a stranger. Change them if either is wrong.
 
 | String | Where | Note |
 |---|---|---|
-| `Email %NAME%` / `Call %NAME%` | Contact, footer | Fills in `shortName`. Becomes "Email Sarah" |
-| `Superior living experiences for extraordinary customers.` | Footer tagline | The hero line, reused. Change both together or they read as a mistake |
-| `Interested in this property?` | Single listing | The one rhetorical question on the site, kept because it labels an action |
+| `Email %NAME%` / `Call %NAME%` | Contact, footer | Fills in `shortName`. Becomes "Email Alexandra" |
+| `Superior living experiences for extraordinary residents.` | Footer tagline | The hero line, reused. Change both together or they read as a mistake |
+| `Experience` / `Education` / `Credentials` | CV group headings | In `ui.cv.groups`, paired with the `kind` each matches |
 | `Photograph to come` / `Photo to come` | Unfilled photo slots | Visitors should never see these. They mean a photo is missing |
 | `Add the file and switch it on in src/content/site.ts` | Unfilled photo slots | Aimed at whoever is editing, not at a visitor |
 
@@ -154,9 +157,9 @@ business day" are commitments to a stranger. Change them if either is wrong.
 
 | Step | Body |
 |---|---|
-| Tell me what you are looking for | Fill in the form below. The more you can tell me about your timeline and your budget, the more useful our first conversation will be. |
-| We talk it through | A thirty minute call, at no cost. I will be straight with you about what is realistic in the current market. |
-| We make a plan | If it is a fit, I will put together a plan for your search or your sale, with the numbers attached. |
+| Tell me what you need | Fill in the form below. The more you can tell me about the situation and the timeline, the more useful the first conversation will be. |
+| We talk it through | A short call, at no cost. I will be straight with you about what is realistic and what it would take. |
+| We agree what happens next | If it is a fit, I will put together a plan with the specifics attached. If it is not, I will say so. |
 
 ### Theme toggle and navigation
 
@@ -165,7 +168,7 @@ business day" are commitments to a stranger. Change them if either is wrong.
 | `Switch to dark theme` / `Switch to light theme` | Screen reader labels. They say what pressing it will do, not what state it is in |
 | `Skip to content` | Standard, first thing a keyboard user reaches |
 | `Open menu` / `Close menu` | Screen reader labels on the mobile menu button |
-| `Home` | Screen reader label on the logotype |
+| (none) | The logotype deliberately has no `aria-label`; see `ACCEPTANCE.md` |
 
 ---
 
@@ -174,10 +177,7 @@ business day" are commitments to a stranger. Change them if either is wrong.
 Aimed at whoever is editing the site rather than at a visitor, because that is
 who will see them.
 
-> No listings yet. Add one by copying `src/content/listings/_template.mdx` and
-> editing the frontmatter.
-
-> No services yet. Add one by copying `src/content/services/_template.mdx` and
+> No CV entries yet. Add one by copying `src/content/cv/_template.mdx` and
 > editing the frontmatter.
 
 > No testimonials yet. Add one by copying
@@ -244,18 +244,19 @@ shape.
 
 Publishing an invented testimonial attributed to a client is a
 misrepresentation. In the US the FTC's endorsement rules cover exactly this,
-and they apply to a small agent's website the same as to a national brand.
+and they apply to a personal website the same as to a national brand.
 
 Three options, in order of preference: replace all four with real quotes given
 with permission; delete the four files and let the written empty state show; or
 turn the section off in `src/content/theme.ts`.
 
-### Listings, `src/content/listings/` — **replace**
+### The CV, `src/content/cv/` — **blank on purpose**
 
-Four properties: Cherry Creek Townhome, Wash Park Bungalow, LoHi Loft, Sloan's
-Lake New Build. Every price, address, bed count and square footage is invented.
-Real listings also carry MLS and brokerage disclosure requirements that vary by
-state and are not modeled here.
+Six entries, all skeletons: "Most recent role title", "Organization name",
+"Replace this line". This is the one place on the site where nothing has been
+invented, which is deliberate. Fill it in or delete the entries you do not
+need; empty groups hide themselves and an empty folder shows a written empty
+state.
 
 ### Blog posts, `src/content/blog/` — **replace**
 
@@ -302,12 +303,12 @@ pass.
 
 ## 9. Where the decorative arrows live
 
-Arrows a screen reader announces (`← Previous`, `Next →` on the blog and
-listing pagers) are part of the label text in `ui.ts`, so they can be changed
-or removed there.
+Arrows a screen reader announces (`← Previous`, `Next →` on the blog pager) are
+part of the label text in `ui.ts`, so they can be changed or removed there.
 
-Arrows that are purely decorative, the `→` after "View all listings" and
-similar links, are generated by CSS and are not in `ui.ts`. A screen reader
-never announces them, so they are presentation rather than copy. They live in
-the component's stylesheet, which is the one deliberate exception to "every
-string is in a content file".
+Two marks are purely decorative and live in CSS rather than in `ui.ts`: the `→`
+after "More about me" and similar links, and the `·` between an organization
+and its location on the CV. A screen reader announces neither, so they are
+presentation rather than copy. They are the one deliberate exception to "every
+string is in a content file", and `npm run audit:strings` is what keeps that
+list from quietly growing.

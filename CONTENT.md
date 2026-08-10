@@ -15,8 +15,8 @@ needs to be touched to change any text, anywhere.
 
 There are two kinds of file in there:
 
-- **`.mdx` files** hold writing: blog posts, listings, services, testimonials,
-  and each section of the home page.
+- **`.mdx` files** hold writing: blog posts, CV entries, testimonials, and
+  each section of the home page.
 - **`.ts` files** hold settings: your name, your email, which sections appear.
 
 Both are just text. You edit them the same way.
@@ -60,10 +60,10 @@ cannot read it off the page:
 
 ```ts
 emailUser: "hello",
-emailDomain: "sarahbrownrealty.com",
+emailDomain: "alexandradenton.com",
 ```
 
-That produces `hello@sarahbrownrealty.com`. Put the part before the `@` in the
+That produces `hello@alexandradenton.com`. Put the part before the `@` in the
 first line and the part after it in the second.
 
 Your name, brand, job title and location are already filled in. Change them
@@ -85,63 +85,49 @@ half-finished site appearing in search results is worse than one that does not.
 
 ---
 
-## Adding a listing
+## Adding a CV entry
 
-1. Go to `src/content/listings/`.
+**File:** anything in `src/content/cv/`
+
+The CV page has three groups: Experience, Education and Credentials. You do not
+pick the group directly. Each entry carries a `kind`, and the page puts it in
+the matching group and hides any group that ends up empty.
+
+1. Go to `src/content/cv/`.
 2. Open `_template.mdx` and copy everything in it.
-3. Click **Add file → Create new file**.
-4. Name it after the property, lowercase, with dashes instead of spaces,
-   ending in `.mdx`. For example `park-hill-victorian.mdx`. That name becomes
-   the web address: `yoursite.com/listings/park-hill-victorian`.
-5. Paste in what you copied, fill in the top section, write the description
-   underneath.
-6. Commit.
-
-The top section between the two `---` lines looks like this:
+3. Click **Add file → Create new file**, name it something short ending `.mdx`,
+   for example `multi-site-manager.mdx`. The name is never shown; it only keeps
+   the files apart.
+4. Paste in what you copied, fill in the top section, commit.
 
 ```
 ---
-title: Cherry Creek Townhome
-location: Cherry Creek North, Denver
-price: "$1,250,000"
-status: for-sale
-beds: 3
-baths: 2.5
-sqft: 2400
-summary: >-
-  One line about the property, used on the card and in search results.
-features:
-  - Chef's kitchen with a marble island
-  - Rooftop terrace with mountain views
-image: cherry-creek-townhome.jpg
-imageAlt: Brick townhome with a black steel front door
+title: Multi-Site Property Manager
+org: Organization name
+location: Denver, CO
+kind: role
+period: "2022 to present"
+summary: One sentence on what this role is.
+bullets:
+  - Something you did, with the number attached to it.
+  - Something you changed, and what it moved from and to.
 order: 1
-featured: true
 draft: false
 ---
 ```
 
-- `price` is in quotes because of the dollar sign. It is free text, so
-  `"Price on request"` works just as well as a number.
-- `status` must be exactly `for-sale`, `pending` or `sold`. The badge on the
-  card follows it.
-- `sqft` must be a plain number with no commas. `2400`, not `2,400 sq ft`.
-- `featured: true` puts it on the home page. The home page shows three; change
-  that number in `src/content/theme.ts`.
-- `order` controls the sort. `1` appears first, then `2`, then `3`.
-- `draft: true` keeps it off the site while you work on it.
+- `kind` must be exactly `role`, `education` or `credential`. The build stops
+  and tells you if it is anything else.
+- `period` is free text. `"2019"`, `"March 2019"` and `"2019 to present"` all
+  work. Keep the quote marks.
+- `location` can be left out entirely, which is usually right for a credential.
+- `order` sorts within the group. `1` appears first.
+- `draft: true` keeps an entry off the site while you work on it.
 
-### The listing photographs
-
-Photos go in `src/assets/listings/`. Upload them there with
-**Add file → Upload files**, then put the filename in the `image` line.
-
-Until a photo is there, the card shows a ruled plate in the right shape rather
-than a broken image, so nothing looks broken while you are setting up.
-
-**Write the `imageAlt` line.** It is what somebody using a screen reader hears
-instead of the photo. Describe what is in it: "Brick townhome with a black
-steel front door", not "listing photo".
+Everything in that folder now is a blank skeleton: `role-one`, `role-two`,
+`role-three`, `education-one`, `credential-one`, `credential-two`. Replace them
+with real entries and delete any you do not need. Nothing breaks if the folder
+ends up empty; the page has a written empty state.
 
 ---
 
@@ -186,31 +172,6 @@ routes, and takes the recent-posts section off the home page.
 
 ---
 
-## Adding or changing a service
-
-In `src/content/services/`. Copy `_template.mdx`.
-
-```
----
-title: Buying
-summary: One line about what this covers.
-order: 1
-icon: key
-points:
-  - Something specific you do
-  - Something else, kept short
-draft: false
----
-```
-
-`icon` must be one of: `trophy`, `clock`, `handshake`, `key`, `shield`,
-`chart`. The build will stop and tell you if it is anything else.
-
-Keep `points` short. They are set on one line each in the layout, and a long
-one wraps awkwardly.
-
----
-
 ## Adding a testimonial
 
 In `src/content/testimonials/`. Copy `_template.mdx`.
@@ -235,9 +196,6 @@ Replace all four with real quotes, from real clients, with their permission,
 or remove the section entirely by opening `src/content/theme.ts` and setting
 `{ id: "testimonials", enabled: false }`.
 
-The same caution applies to the four example listings: the prices, addresses
-and square footage in them are invented.
-
 ---
 
 ## Changing the home page
@@ -254,7 +212,6 @@ export const homeSections: HomeSection[] = [
   { id: "panels",        enabled: true },
   { id: "figures",       enabled: true },
   { id: "guidebook",     enabled: true },
-  { id: "listings",      enabled: true },
   { id: "whyWorkWithMe", enabled: true },
   { id: "testimonials",  enabled: true },
   { id: "blog",          enabled: true },
@@ -271,13 +228,12 @@ the page closes up around the gap.
 Further down the same file:
 
 ```ts
-export const listingsConfig = {
-  featuredOnHome: 3,
+export const feedConfig = {
   postsOnHome: 3,
 };
 ```
 
-How many listings and how many blog posts the home page shows.
+How many blog posts the home page shows.
 
 ### The words in those sections
 
@@ -294,8 +250,8 @@ Each section has one file in `src/content/home/`, named after its id:
 | `whyWorkWithMe` | `whyWorkWithMe.mdx` | The numbered list |
 | `cta` | `cta.mdx` | The closing invitation |
 
-`listings`, `testimonials` and `blog` pull from their own folders; their files
-here only hold the heading above the section.
+`testimonials` and `blog` pull from their own folders; their files here only
+hold the heading above the section.
 
 The **figures** are capped at four. The build will stop and tell you if you add
 a fifth, because more than four stops being scannable in one pass.
@@ -316,7 +272,7 @@ If you find yourself wanting to change a word and cannot find it in
 
 ## Swapping the photographs
 
-There are three site-wide photographs plus one per listing.
+There are three photographs on this site.
 
 | Photo | Where it goes | Then set | Status |
 |---|---|---|---|
@@ -333,7 +289,7 @@ with the same name; nothing else needs editing. For the other two:
 3. Open `src/content/site.ts` and change the matching `...Ready: false` to
    `true`.
 4. On the line below, replace the `...Alt` text with a short description of
-   the photo, for people using screen readers. "Sarah Brown, seated and
+   the photo, for people using screen readers. "Alexandra Denton, seated and
    smiling in a dark blazer" is the right level of detail.
 
 Until you do this, the site shows a neutral ruled rectangle in the right shape,

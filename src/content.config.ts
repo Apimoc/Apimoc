@@ -99,63 +99,47 @@ const home = defineCollection({
 });
 
 /* --------------------------------------------------------------------------
-   SERVICES
+   CV
+   One file per entry. `kind` decides which group it lands in on the page, so
+   roles, education and credentials all share one folder and one schema
+   rather than needing three of everything.
    -------------------------------------------------------------------------- */
 
-const services = defineCollection({
-  loader: glob({ pattern: TEMPLATE_SAFE, base: "./src/content/services" }),
+const cv = defineCollection({
+  loader: glob({ pattern: TEMPLATE_SAFE, base: "./src/content/cv" }),
   schema: z.object({
     title: text("title"),
-    /** One line, shown in the list. */
-    summary: text("summary"),
-    /** Shown as a numbered sequence, so order matters. */
-    order: z.number().default(0),
-    /** Short bullets under the summary. */
-    points: z.array(z.string()).default([]),
-    icon: z
-      .enum(["trophy", "clock", "handshake", "key", "shield", "chart"])
-      .default("key"),
-    draft: z.boolean().default(false),
-  }),
-});
+    /** Employer, school or awarding body. */
+    org: text("org"),
+    /** "Denver, CO". Optional: a credential has no location. */
+    location: z.string().optional(),
 
-/* --------------------------------------------------------------------------
-   LISTINGS
-   -------------------------------------------------------------------------- */
-
-const listings = defineCollection({
-  loader: glob({ pattern: TEMPLATE_SAFE, base: "./src/content/listings" }),
-  schema: z.object({
-    title: text("title"),
-    /** Street address or neighborhood. Shown under the title. */
-    location: text("location"),
-    /** Free text, so it can read "$1,250,000" or "Price on request". */
-    price: text("price"),
-    status: z
-      .enum(["for-sale", "pending", "sold"], {
-        error: 'status must be exactly "for-sale", "pending" or "sold".',
+    kind: z
+      .enum(["role", "education", "credential"], {
+        error: 'kind must be exactly "role", "education" or "credential".',
       })
-      .default("for-sale"),
-    beds: z.coerce.number().int().nonnegative().optional(),
-    baths: z.coerce.number().nonnegative().optional(),
-    /** Interior square footage, a plain number with no commas. */
-    sqft: z.coerce
-      .number({ error: "sqft must be a plain number, for example 2400." })
-      .int()
-      .positive()
-      .optional(),
+      .default("role"),
+
     /**
-     * Photograph filename inside src/assets/listings/. Leave it out and the
-     * card shows a designed placeholder plate at the right aspect ratio.
+     * Free text rather than a date, so an entry can read "2019" or
+     * "March 2019" or "2019 to present" without the schema arguing. A CV is
+     * read, not sorted on, and `order` below does the sorting.
+     *
+     * Coerced because YAML reads a bare `period: 2021` as a number, and
+     * failing the build over a missing pair of quotes is a bad trade when
+     * the field is free text anyway. `.optional()` short-circuits on
+     * undefined, so an absent period stays absent rather than becoming the
+     * string "undefined".
      */
-    image: z.string().optional(),
-    imageAlt: z.string().optional(),
-    /** One line for the card and the meta description. */
-    summary: text("summary"),
-    /** Highlights shown as a ruled list on the single listing page. */
-    features: z.array(z.string()).default([]),
+    period: z.coerce.string().optional(),
+
+    /** One line under the title. */
+    summary: z.string().optional(),
+    /** What you did. Keep each one to a line. */
+    bullets: z.array(z.string()).default([]),
+
+    /** Lower numbers first, within each group. */
     order: z.number().default(0),
-    featured: z.boolean().default(false),
     draft: z.boolean().default(false),
   }),
 });
@@ -194,4 +178,4 @@ const blog = defineCollection({
   }),
 });
 
-export const collections = { home, services, listings, testimonials, blog };
+export const collections = { home, cv, testimonials, blog };

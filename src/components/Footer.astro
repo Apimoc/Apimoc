@@ -17,13 +17,24 @@ const socials = [
 
 const hasEmail = !isPlaceholder(contact.emailUser);
 const hasPhone = !isPlaceholder(contact.phone);
+
+/* The logotype is the full name now, so printing brand and fullName together
+   set the same words twice, once in caps and once in the script face. The
+   script line is kept only when the brand is genuinely something else. */
+const showScriptName = identity.brand !== identity.fullName;
+
+/* A column heading with nothing under it reads as a broken column rather
+   than an empty one, and every entry here is still a placeholder. */
+const hasConnect = hasEmail || hasPhone || socials.length > 0;
 ---
 
 <footer class="site-footer">
   <div class="shell inner">
     <div class="brand-col">
       <p class="brand">{identity.brand}</p>
-      <p class="t-script byline">{identity.fullName}</p>
+      {showScriptName && (
+        <p class="t-script byline">{identity.fullName}</p>
+      )}
       <p class="tagline">{ui.footer.tagline}</p>
     </div>
 
@@ -36,6 +47,7 @@ const hasPhone = !isPlaceholder(contact.phone);
       </ul>
     </nav>
 
+    {hasConnect && (
     <div class="col">
       <h2 class="t-caption col-title">{ui.footer.connectHeading}</h2>
       <ul>
@@ -56,6 +68,7 @@ const hasPhone = !isPlaceholder(contact.phone);
         ))}
       </ul>
     </div>
+    )}
   </div>
 
   <div class="shell bottom">
