@@ -1,0 +1,101 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  items: {
+    icon: "trophy" | "clock" | "handshake" | "key" | "shield" | "chart";
+    title: string;
+    body: string;
+  }[];
+  /** Numbered runs as an ordered sequence with 01 / 02 / 03 markers. */
+  numbered?: boolean;
+  /**
+   * Heading level for the card titles. Defaults to 3, which is right when a
+   * SectionHead has already emitted the h2 above. A band with no section
+   * heading must pass 2, or the document skips a level.
+   */
+  level?: 2 | 3;
+  class?: string;
+}
+
+const { items, numbered = false, level = 3, class: className } = Astro.props;
+
+/**
+ * Three columns of icon, heading and a short paragraph.
+ *
+ * The numbered variant exists because "why work with me" genuinely is a
+ * sequence a reader moves through in order. The plain variant is not
+ * numbered, because those three are peers and numbering them would encode an
+ * order that is not real.
+ */
+---
+
+{
+  items.length > 0 && (
+    <ul class:list={["pillars", className]} data-reveal="rows">
+      {items.map((item, index) => (
+        <li class="pillar">
+          {numbered ? (
+            <span class="index t-figure" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+          ) : (
+            <Icon name={item.icon} />
+          )}
+          {/* Written out rather than built from `h${level}`: a dynamic tag
+              name is a component to Astro, and scoped styles do not reach a
+              component's root, so `.title` would silently stop applying. */}
+          {level === 2 ? (
+            <h2 class="t-h3 title">{item.title}</h2>
+          ) : (
+            <h3 class="t-h3 title">{item.title}</h3>
+          )}
+          <p class="body">{item.body}</p>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .pillars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(2rem, 4vw, 3rem);
+  }
+
+  .pillar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .index {
+    font-size: 1.75rem;
+    color: var(--brass);
+    line-height: 1;
+  }
+
+  .title {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 1.0625rem;
+  }
+
+  .body {
+    margin: 0;
+    color: var(--ink-muted);
+    max-width: 34ch;
+    font-size: 0.9375rem;
+  }
+
+  @media (min-width: 48rem) {
+    .pillars {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+</style>

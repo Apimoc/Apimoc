@@ -4,10 +4,8 @@
 
 /* ==========================================================================
    BASE
-   The site is set as a document, not as a landing page. Full-bleed ruled
-   bands, a single measure for prose, hairline rules doing the work that
-   borders and shadows would normally do. The only object here that is not
-   flat is the signature element.
+   A dark, warm, editorial layout: full-bleed bands, wide-tracked display
+   type, arched photographs, and a script used sparingly as a flourish.
    ========================================================================== */
 
 *,
@@ -37,43 +35,56 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* iOS Safari: respect the notch and home indicator. */
+  /* iOS Safari: respect the notch and the home indicator. */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
 
-/* --- Type roles ---------------------------------------------------------
-   Fraunces earns its keep through the opsz axis, driven genuinely: high at
-   display sizes, low in nav and captions. WONK is absent from the loaded
-   subset and therefore locked at 0. */
+/* --- Type roles ---------------------------------------------------------- */
 
 .t-display {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   font-size: var(--text-display);
   line-height: var(--leading-display);
   letter-spacing: var(--tracking-display);
-  font-variation-settings: "opsz" 144;
+  font-variation-settings: "opsz" 120;
+  text-transform: uppercase;
   text-wrap: balance;
   margin: 0;
 }
 
 .t-h2 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 400;
   font-size: var(--text-h2);
   line-height: var(--leading-h2);
   letter-spacing: var(--tracking-h2);
   font-variation-settings: "opsz" 72;
+  text-transform: uppercase;
   text-wrap: balance;
   margin: 0;
 }
 
 .t-h3 {
-  font-family: var(--font-sans);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 400;
   font-size: var(--text-h3);
   line-height: 1.3;
+  font-variation-settings: "opsz" 36;
+  margin: 0;
+}
+
+/* The eyebrow above a heading, and the flourish under a figure. Short
+   phrases only. */
+.t-script {
+  font-family: var(--font-script);
+  font-size: var(--text-script);
+  line-height: 1;
+  font-weight: 400;
+  color: var(--brass);
+  text-transform: none;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -87,20 +98,12 @@ body {
   margin: 0;
 }
 
-/* The fourth type role, achieved without a fourth family. This site is an
-   argument made out of numbers. Columns of figures align, and a zero can
-   never be mistaken for a capital O. */
+/* Figures line up in columns and a zero can never be read as a capital O. */
 .t-figure {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-variant-numeric: tabular-nums slashed-zero;
   font-feature-settings: "tnum" 1, "zero" 1;
-}
-
-/* Low optical size for small display-face text, so Fraunces stays legible
-   rather than shrinking a headline design. */
-.t-display-small {
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 14;
+  font-variation-settings: "opsz" 72;
 }
 
 /* --- Links --------------------------------------------------------------- */
@@ -109,15 +112,15 @@ a {
   color: var(--brass);
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
-  transition: opacity 0.18s var(--ease-out);
+  transition: color 0.18s var(--ease-out);
 }
 
 a:hover {
-  opacity: 0.72;
+  color: var(--ink);
 }
 
-/* Focus is visible and styled, never suppressed. Brass measures 5.07:1 in
-   light and 7.69:1 in dark, clearing the 3:1 non-text requirement in both. */
+/* Focus is visible and styled, never suppressed. Brass measures 8.46:1 on the
+   dark ground and 5.07:1 on the light one. */
 :focus-visible {
   outline: 2px solid var(--brass);
   outline-offset: 3px;
@@ -132,7 +135,7 @@ a:hover {
 
 .shell {
   width: 100%;
-  max-width: 78rem;
+  max-width: var(--shell);
   margin-inline: auto;
   padding-inline: var(--gutter);
 }
@@ -141,22 +144,85 @@ a:hover {
   max-width: var(--measure);
 }
 
-/* Full-bleed ruled band. The rule belongs to the band, not to a card. */
 .band {
-  border-top: var(--hairline) solid var(--rule);
   padding-block: var(--band-y);
 }
 
-.band:first-of-type {
-  border-top: 0;
+.band-raised {
+  background: var(--paper-raised);
 }
 
-/* A hairline that is decorative only. Never use this for an operable
-   boundary in dark mode: see tokens.css. */
+.band-sunken {
+  background: var(--paper-sunken);
+}
+
 .rule {
   border: 0;
   border-top: var(--hairline) solid var(--rule);
   margin: 0;
+}
+
+/* --- Buttons -------------------------------------------------------------
+   A brass pill for the primary action, an outlined one for the secondary.
+   Set here once so every page uses the same object. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.75rem;
+  border-radius: 999px;
+  border: var(--hairline) solid var(--brass);
+  background: var(--brass);
+  color: var(--paper);
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-caption);
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease-out),
+    border-color 0.2s var(--ease-out),
+    color 0.2s var(--ease-out);
+}
+
+.btn:hover {
+  background: var(--brass-deep);
+  border-color: var(--brass-deep);
+  color: var(--paper);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-ui);
+}
+
+.btn-ghost:hover {
+  background: var(--brass);
+  border-color: var(--brass);
+  color: var(--paper);
+}
+
+/* --- The arch ------------------------------------------------------------
+   The recurring shape of the design: portraits and property photographs are
+   arched at the top and square at the base. */
+
+.arch {
+  border-radius: var(--radius-arch);
+  overflow: hidden;
+}
+
+/* --- Cards --------------------------------------------------------------- */
+
+.card {
+  background: var(--paper-raised);
+  border: var(--hairline) solid var(--rule);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
 }
 
 /* --- Targets -------------------------------------------------------------
@@ -205,9 +271,9 @@ button,
 }
 
 /* --- Reveal language -----------------------------------------------------
-   One language, used everywhere. Elements start hidden only when JS is
-   present and motion is allowed, so a no-JS or reduced-motion visitor never
-   sees a blank page. GSAP adds .is-armed once it takes ownership. */
+   One language, used everywhere. Elements are hidden only once the animation
+   layer has actually loaded and taken ownership, so a no-JS or reduced-motion
+   visitor never sees a blank page. */
 
 .is-armed [data-reveal] {
   opacity: 0;

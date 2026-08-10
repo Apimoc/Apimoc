@@ -1,0 +1,114 @@
+---
+import { getCollection } from "astro:content";
+import { ui } from "../content/ui";
+
+interface Props {
+  limit?: number;
+}
+
+const { limit } = Astro.props;
+
+const all = await getCollection("testimonials", ({ data }) => !data.draft);
+const items = all
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, limit ?? all.length);
+---
+
+{
+  items.length === 0 ? (
+    <p class="empty">{ui.testimonials.empty}</p>
+  ) : (
+    <ul class="quotes" data-reveal="rows">
+      {items.map((item) => (
+        <li class="quote card">
+          <blockquote>
+            <p>{item.data.quote}</p>
+          </blockquote>
+          <footer class="who">
+            <cite class="name">{item.data.name}</cite>
+            {item.data.detail && (
+              <span class="detail t-caption">{item.data.detail}</span>
+            )}
+          </footer>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .quotes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .quote {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    height: 100%;
+  }
+
+  blockquote {
+    margin: 0;
+    /* The body face, not the reading face. Literata is route-scoped to the
+       blog, so using it here would silently fall back to Georgia on every
+       other page and the quotes would not match themselves across the site. */
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+
+  blockquote p {
+    margin: 0;
+  }
+
+  blockquote p::before {
+    content: open-quote;
+  }
+
+  blockquote p::after {
+    content: close-quote;
+  }
+
+  blockquote {
+    quotes: "\201C" "\201D";
+  }
+
+  .who {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: var(--hairline) solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .name {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--brass);
+    font-size: 0.9375rem;
+  }
+
+  .empty {
+    margin: 0;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .quotes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 72rem) {
+    .quotes {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

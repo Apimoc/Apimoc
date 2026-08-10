@@ -1,16 +1,16 @@
 /* ==========================================================================
    SITE CONFIGURATION
 
-   This is the one file to edit for anything that identifies the site: name,
-   contact details, links, navigation, SEO defaults, feature switches.
+   The one file to edit for anything that identifies the site: name, contact
+   details, links, navigation, SEO defaults, feature switches.
 
-   Anything still reading "TODO:" has not been filled in yet. Those values
-   are deliberately not invented. The build prints a warning listing every
-   one that is still outstanding, and pages that would publish a placeholder
-   link hide it instead of shipping a dead link.
+   Anything still reading "TODO:" has not been filled in yet. Those values are
+   deliberately not invented. The build prints a warning listing every one
+   still outstanding, and anything that would publish a placeholder link hides
+   it instead of shipping a dead link.
 
-   This file must not import anything. It is read by astro.config.ts at
-   config time, where Astro-specific imports are not available.
+   This file must not import anything. It is read by astro.config.ts at config
+   time, where Astro-specific imports are not available.
    ========================================================================== */
 
 /** Marks a value as not yet supplied. */
@@ -22,57 +22,73 @@ export function isPlaceholder(value: string | undefined | null): boolean {
 }
 
 /* --------------------------------------------------------------------------
-   1. FILL THESE IN
+   1. IDENTITY
    -------------------------------------------------------------------------- */
 
 export const identity = {
-  /** Displayed everywhere as the primary name. */
-  fullName: "Alexandra Denton",
+  /** The agent's name. Appears in the logotype, the hero script and the footer. */
+  fullName: "Sarah Brown",
 
-  /** Informal short form. Used in the contact copy only. */
-  shortName: "Allie",
+  /** Informal short form, used in the calls to action. */
+  shortName: "Sarah",
 
-  /** Post-nominals shown after the name in the header and JSON-LD. */
-  postNominals: "ARM®",
+  /** How the signature under the About copy reads. */
+  signature: "Sarah B.",
 
-  /** Job title. Used in the header, meta description and JSON-LD. */
-  jobTitle: "Multi-Site Property Manager",
+  /** The brand line above the name in the logotype. */
+  brand: "Top Real Estate",
 
-  /** Shown in the header and footer. */
-  location: "TODO: for example Greater Boston",
+  /** Job title. Used in the meta description and JSON-LD. */
+  jobTitle: "Real Estate Specialist",
+
+  /** Shown in the footer and used in the JSON-LD address. */
+  location: "Denver, Colorado",
 } as const;
 
 export const contact = {
   /**
-   * Public email. Use a dedicated address, not a personal one.
-   * Stored split so the rendered markup never contains a scrapeable
-   * "user@domain" string. See src/components/EmailLink.astro.
+   * Public email, stored split so the rendered markup never contains a
+   * scrapeable "user@domain" string. See src/components/EmailLink.astro.
    */
   emailUser: "TODO: the part before the @",
   emailDomain: "TODO: the part after the @",
 
-  /** Full profile URL including https://. */
+  /** Full URLs including https://. Any left as TODO is simply not rendered. */
   linkedin: "TODO: https://www.linkedin.com/in/...",
+  instagram: "TODO: https://www.instagram.com/...",
+  facebook: "TODO: https://www.facebook.com/...",
 
   /**
-   * Phone is intentionally absent and must stay that way. It appears
-   * nowhere on this site in any form. Contact form and email only.
+   * A phone number IS appropriate on a real estate site, unlike the earlier
+   * build. Leave it as TODO to omit it everywhere.
    */
+  phone: "TODO: (303) 555-0100",
+
+  /** Office address, shown on the contact page. Optional. */
+  office: "TODO: 1234 Street Name, Denver, CO 80202",
 } as const;
 
 export const assets = {
-  /** Drop the file at public/images/portrait.jpg, then set this to true. */
-  portraitReady: false,
-  portrait: "/images/portrait.jpg",
-  portraitAlt: "TODO: describe the portrait for screen readers",
+  /**
+   * The portrait. Drop the file at src/assets/portrait.jpg and set this to
+   * true. Until then every portrait slot shows a designed plate at the right
+   * aspect ratio, so the layout is already the shape it will be.
+   */
+  portraitReady: true,
+  portraitAlt:
+    "Sarah Brown, seated in an armchair in a black blazer over a white top, smiling toward the camera",
 
-  /** Drop the file at public/cv.pdf, then set this to true. */
-  cvReady: false,
-  cv: "/cv.pdf",
+  /** The hero background photograph, at src/assets/hero.jpg. */
+  heroReady: false,
+  heroAlt: "City skyline at dusk",
+
+  /** The lead magnet cover, at src/assets/guidebook.jpg. */
+  guidebookReady: false,
+  guidebookAlt: "The Ultimate Home Buying Guide, cover",
 } as const;
 
 /**
- * Canonical origin, no trailing slash. Used for sitemap, RSS, canonical
+ * Canonical origin, no trailing slash. Used for the sitemap, RSS, canonical
  * URLs and Open Graph. Until this is real, absolute URLs are wrong.
  */
 export const siteUrl = "https://example.com";
@@ -81,61 +97,29 @@ export const siteUrl = "https://example.com";
 export const siteUrlIsReal = false;
 
 /* --------------------------------------------------------------------------
-   2. LEASE-UP FIGURES
-   These belong to the Experience page, not the landing page. The landing
-   page is an introduction, not a stat sheet.
-   -------------------------------------------------------------------------- */
-
-export const occupancy = {
-  /** Total unit volumes in the lattice. */
-  totalUnits: 153,
-  /** How many are lit. The remainder cluster as a single corner notch. */
-  leasedUnits: 142,
-  /** Units per floor plate. Drives the shape of the stack. */
-  unitsPerFloor: 9,
-  /** Free-text period, shown in the label. */
-  period: "9 months",
-  /** Shown beside the stack. A stated figure, never an animated counter. */
-  label: "142 of 153 leased · 9 months",
-  /** Read by screen readers in place of the canvas. */
-  textEquivalent:
-    "A lattice of 153 unit volumes representing a lease-up. 142 are lit, showing 93 percent occupancy reached in 9 months. The 11 unlit units form a single notch at one corner of the stack.",
-} as const;
-
-/* --------------------------------------------------------------------------
-   3. NAVIGATION
-   Order here is the order in the header and the mobile menu. Remove an entry
-   and it disappears from both. Entries whose route is switched off in
-   theme.ts are filtered out automatically.
+   2. NAVIGATION
+   Order here is the order in the header and the mobile menu.
    -------------------------------------------------------------------------- */
 
 export const nav = [
+  { label: "Home", href: "/" },
   { label: "About", href: "/about" },
-  { label: "Experience", href: "/experience" },
-  { label: "Work", href: "/work" },
-  { label: "Credentials", href: "/credentials" },
-  { label: "Journal", href: "/journal" },
+  { label: "Services", href: "/services" },
+  { label: "Listings", href: "/listings" },
+  { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
 /* --------------------------------------------------------------------------
-   4. FEATURE SWITCHES
+   3. FEATURE SWITCHES
    -------------------------------------------------------------------------- */
 
 export const features = {
-  /**
-   * The journal is fully built: index, post layout, tag filter, RSS,
-   * BlogPosting schema. It is switched off so an empty journal never greets
-   * a recruiter. Set this to true to publish it. That single change adds the
-   * nav link, lists it in the sitemap and removes the noindex.
-   */
-  journal: false,
+  /** The blog. Set false to hide the route and drop it from the nav. */
+  blog: true,
 
-  /**
-   * The 3D buildings. Set false to serve the flat elevation everywhere.
-   * Per-page building size and motion live in src/content/scenes.ts.
-   */
-  buildingScene: true,
+  /** The consultation booking page, linked from the header button. */
+  consultation: true,
 
   /** Smooth scrolling, desktop pointer devices only, never on touch. */
   smoothScroll: true,
@@ -146,32 +130,28 @@ export const features = {
 } as const;
 
 /* --------------------------------------------------------------------------
-   5. SEO DEFAULTS
-   Per-page titles and descriptions come from each page's frontmatter and
-   override these.
+   4. SEO DEFAULTS
+   Per-page titles and descriptions come from each page and override these.
    -------------------------------------------------------------------------- */
 
 export const seo = {
-  titleTemplate: "%s · " + identity.fullName,
-  defaultTitle: identity.fullName,
+  titleTemplate: "%s · " + identity.brand,
+  defaultTitle: `${identity.brand} by ${identity.fullName}`,
   defaultDescription:
-    "TODO: one sentence, under 160 characters, describing what she does and where.",
-  /** Subjects for JSON-LD knowsAbout. */
+    "Real estate specialist in Denver, Colorado. Superior living experiences for extraordinary customers.",
   knowsAbout: [
-    "LIHTC compliance",
-    "Rural Development housing",
-    "Property lease-up",
-    "Fair Housing",
-    "Affordable housing operations",
+    "Residential real estate",
+    "Home buying",
+    "Home selling",
+    "Property valuation",
+    "Denver real estate market",
   ],
-  /** Employer for JSON-LD worksFor. Leave as TODO to omit the field. */
-  worksFor: "TODO: employer name, or leave as TODO to omit",
-  /** Institution for JSON-LD alumniOf. Leave as TODO to omit the field. */
-  alumniOf: "TODO: institution name, or leave as TODO to omit",
+  /** Brokerage or agency. Leave as TODO to omit the field. */
+  worksFor: "TODO: brokerage name, or leave as TODO to omit",
 } as const;
 
 /* --------------------------------------------------------------------------
-   6. DERIVED
+   5. DERIVED
    Nothing below needs editing.
    -------------------------------------------------------------------------- */
 
@@ -179,27 +159,22 @@ export const emailAddress = isPlaceholder(contact.emailUser)
   ? ""
   : `${contact.emailUser}@${contact.emailDomain}`;
 
-export const displayName = isPlaceholder(identity.postNominals)
-  ? identity.fullName
-  : `${identity.fullName}, ${identity.postNominals}`;
-
 /** Every outstanding placeholder, for the build-time warning. */
 export function outstandingPlaceholders(): string[] {
   const out: string[] = [];
   const check = (path: string, value: string) => {
     if (isPlaceholder(value)) out.push(path);
   };
-  check("identity.fullName", identity.fullName);
-  check("identity.shortName", identity.shortName);
-  check("identity.postNominals", identity.postNominals);
-  check("identity.jobTitle", identity.jobTitle);
-  check("identity.location", identity.location);
   check("contact.emailUser", contact.emailUser);
   check("contact.emailDomain", contact.emailDomain);
+  check("contact.phone", contact.phone);
   check("contact.linkedin", contact.linkedin);
-  check("seo.defaultDescription", seo.defaultDescription);
+  check("contact.instagram", contact.instagram);
+  check("contact.facebook", contact.facebook);
+  check("contact.office", contact.office);
   if (!siteUrlIsReal) out.push("siteUrl (still https://example.com)");
-  if (!assets.portraitReady) out.push("assets.portrait (no file at public/images/portrait.jpg)");
-  if (!assets.cvReady) out.push("assets.cv (no file at public/cv.pdf)");
+  if (!assets.portraitReady) out.push("assets.portrait (src/assets/portrait.jpg)");
+  if (!assets.heroReady) out.push("assets.hero (src/assets/hero.jpg)");
+  if (!assets.guidebookReady) out.push("assets.guidebook (src/assets/guidebook.jpg)");
   return out;
 }

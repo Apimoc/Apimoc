@@ -30,7 +30,7 @@ const person: Record<string, unknown> = {
 if (!isPlaceholder(identity.fullName)) person.name = identity.fullName;
 if (!isPlaceholder(identity.jobTitle)) person.jobTitle = identity.jobTitle;
 if (emailAddress) person.email = `mailto:${emailAddress}`;
-if (assets.portraitReady) person.image = new URL(assets.portrait, siteUrl).href;
+if (assets.portraitReady) person.image = new URL("/og/default.png", siteUrl).href;
 if (!isPlaceholder(identity.location)) {
   person.address = {
     "@type": "PostalAddress",
@@ -40,12 +40,11 @@ if (!isPlaceholder(identity.location)) {
 if (!isPlaceholder(seo.worksFor)) {
   person.worksFor = { "@type": "Organization", name: seo.worksFor };
 }
-if (!isPlaceholder(seo.alumniOf)) {
-  person.alumniOf = { "@type": "EducationalOrganization", name: seo.alumniOf };
-}
 if (seo.knowsAbout.length) person.knowsAbout = seo.knowsAbout;
 
-const sameAs = [contact.linkedin].filter((u) => !isPlaceholder(u));
+const sameAs = [contact.linkedin, contact.instagram, contact.facebook].filter(
+  (u) => !isPlaceholder(u),
+);
 if (sameAs.length) person.sameAs = sameAs;
 
 const graph: Record<string, unknown>[] = [person];

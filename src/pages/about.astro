@@ -1,31 +1,72 @@
 ---
 import { getCollection, render } from "astro:content";
 import Page from "../layouts/Page.astro";
-import Portrait from "../components/Portrait.astro";
+import Figure from "../components/Figure.astro";
+import Figures from "../components/Figures.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { assets, identity } from "../content/site";
+import { ui, fill } from "../content/ui";
 
-/**
- * The About page reads from the same home/about.mdx entry, so there is one
- * place to write the narrative rather than two that drift.
- */
-const entries = await getCollection("home");
-const about = entries.find((entry) => entry.data.section === "about");
-const Content = about ? (await render(about)).Content : null;
+const sections = await getCollection("home");
+const by = new Map(sections.map((entry) => [entry.data.section, entry]));
+
+const about = by.get("about");
+const panels = by.get("panels");
+const figures = by.get("figures");
+const AboutBody = about ? (await render(about)).Content : null;
 ---
 
 <Page
   title="About"
-  heading="About"
-  scene="about"
-  description="How I work, and what I take on."
+  eyebrow={about?.data.eyebrow}
+  heading={about?.data.heading ?? "About"}
+  description={fill(ui.pages.about.description, {
+    NAME: identity.fullName,
+    ROLE: identity.jobTitle,
+    LOCATION: identity.location,
+  })}
 >
   <section class="band" aria-label="About">
     <div class="shell layout">
-      <div class="portrait-slot" data-reveal="block">
-        <Portrait />
+      <div class="photo" data-reveal="block">
+        <Figure
+          src="portrait.jpg"
+          alt={assets.portraitAlt}
+          ready={assets.portraitReady}
+          arch
+          ratio="4 / 5"
+          sizes="(min-width: 48rem) 26rem, 80vw"
+        />
       </div>
-      <div class="copy measure" data-reveal="block">
-        {Content && <Content />}
+      <div class="copy">
+        <div class="prose-block" data-reveal="block">
+          {AboutBody && <AboutBody />}
+        </div>
+        {about?.data.signature && (
+          <p class="t-script signature">{about.data.signature}</p>
+        )}
       </div>
+    </div>
+  </section>
+
+  <section class="band band-raised" aria-label={panels?.data.section}>
+    <div class="shell panels" data-reveal="rows">
+      {(panels?.data.panels ?? []).map((panel) => (
+        <article class="card panel">
+          <h2 class="t-h3 panel-title">{panel.title}</h2>
+          <p class="panel-body">{panel.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="band" aria-label={figures?.data.heading}>
+    <div class="shell">
+      <SectionHead heading={figures?.data.heading} />
+      <Figures items={figures?.data.figures ?? []} />
+      <p class="center-cta">
+        <a class="btn" href="/consultation">{ui.cta.bookConsultation}</a>
+      </p>
     </div>
   </section>
 </Page>
@@ -33,22 +74,58 @@ const Content = about ? (await render(about)).Content : null;
 <style>
   .layout {
     display: grid;
-    gap: 2.5rem;
+    gap: clamp(2rem, 5vw, 3.5rem);
     align-items: start;
   }
 
-  .copy :global(p) {
-    margin: 0 0 1.15rem;
+  .photo {
+    max-width: 26rem;
+    width: 100%;
+    justify-self: center;
   }
 
-  .copy :global(p:last-child) {
-    margin-bottom: 0;
+  .prose-block :global(p) {
+    margin: 0 0 1.15rem;
+    color: var(--ink-muted);
+    max-width: 56ch;
+  }
+
+  .signature {
+    margin: 1.25rem 0 0;
+    font-size: 2rem;
+  }
+
+  .panels {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .panel-title {
+    text-transform: none;
+    font-size: 1.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .panel-body {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+
+  .center-cta {
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+    text-align: center;
   }
 
   @media (min-width: 48rem) {
     .layout {
-      grid-template-columns: 16rem 1fr;
-      gap: 3.5rem;
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    }
+    .photo {
+      justify-self: start;
+    }
+    .panels {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>

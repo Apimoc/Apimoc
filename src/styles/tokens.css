@@ -3,123 +3,121 @@
    The only file in this codebase permitted to contain a hex color value.
    Every color used anywhere else must reference one of these variables.
 
-   Contrast ratios below are measured, not asserted. See CONTENT.md before
-   changing any value: several of these pairs sit close to the WCAG AA
-   threshold and a small nudge can push them under.
+   The site is DARK BY DEFAULT. That is the design, not an accident: the
+   reference this was built from is a dark, warm, gold-accented layout. The
+   light theme is a considered second version rather than an inversion.
+
+   Contrast ratios below are measured, not asserted. Run
+   `npm run audit:contrast` after touching any of them: several pairs sit
+   close to the WCAG AA threshold and a small nudge can push them under.
    ========================================================================== */
 
 :root {
-  /* --- Light theme -------------------------------------------------------
+  /* --- Dark theme, the default -------------------------------------------
      Token          Ratio on --paper   Ratio on --paper-raised
-     --ink              13.06:1              14.27:1
-     --ink-muted         5.35:1               5.84:1
-     --brass             5.07:1               5.54:1
-     --umber             9.22:1              10.07:1
+     --ink              15.24:1              13.68:1
+     --ink-muted         6.55:1               5.88:1
+     --brass             8.36:1               7.50:1
+     --umber             1.42:1               1.28:1   <-- decorative ONLY
      ---------------------------------------------------------------------- */
-  --paper: #efe8da; /* warm parchment page ground */
-  --paper-raised: #f7f2e8; /* cards, journal body */
-  --ink: #2a2019; /* primary text, never pure black */
-  --ink-muted: #6b5b4a; /* secondary text */
-  --brass: #7e5b18; /* links, accent, focus rings */
-  --umber: #4a3728; /* rules, borders */
-
-  /* --- 3D scene materials ------------------------------------------------
-     The building in the hero is lit and textured from these. They live here
-     so this file stays the only place in the project a colour is written.
-     They are material colours, not UI colours, so they carry no contrast
-     requirement: nothing is ever set in them. */
-  --mat-brick: #8c5a3c; /* warm red-brown brick */
-  --mat-mortar: #d9cfbe; /* pale joint */
-  --mat-stucco: #e4daca; /* rendered party walls */
-  --mat-concrete: #c6bcaa; /* exposed floor slabs */
-  --mat-roof: #4a4038; /* composition roofing */
-  --mat-trim: #6e625a; /* window frames and mullions */
+  --paper: #14110f; /* warm charcoal, never pure black */
+  --paper-raised: #1e1a17; /* cards, panels, the guidebook band */
+  --paper-sunken: #0e0c0b; /* the header and footer, a shade deeper */
+  --ink: #f0e9df; /* primary text */
+  --ink-muted: #a99c8c; /* secondary text */
+  --brass: #d3a75c; /* buttons, accents, the script lines */
+  --brass-deep: #a97f3c; /* hover and pressed states on brass */
+  --umber: #3a322a; /* hairlines and rules */
 
   /* Role split. --rule is decorative only. --line-ui carries any boundary a
-     user must see in order to operate the interface: form field borders,
-     checkbox outlines, focus rings. In light theme both resolve to umber. */
+     user must see to operate the interface: form fields, focus rings. */
   --rule: var(--umber);
-  --line-ui: var(--umber);
+  --line-ui: var(--ink-muted);
 
-  /* --- Type scale ------------------------------------------------------- */
+  /* Scrim over the hero photograph, so the headline stays readable whatever
+     the image behind it is doing. */
+  --scrim: color-mix(in oklab, var(--paper) 74%, transparent);
+
+  /* --- Type ---------------------------------------------------------------
+     Three faces, three jobs. The script is for short accent phrases only:
+     a name, a section eyebrow, a two-word flourish under a figure. It is
+     never used for anything a reader has to work through. */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-sans: "Instrument Sans", system-ui, -apple-system, sans-serif;
+  --font-script: "Allura", "Snell Roundhand", cursive;
   --font-prose: "Literata", Georgia, "Times New Roman", serif;
 
-  --text-display: clamp(2.75rem, 7vw, 5.5rem);
-  --text-h2: clamp(1.75rem, 3.5vw, 2.5rem);
-  --text-h3: 1.25rem;
+  --text-display: clamp(2.5rem, 6vw, 4.5rem);
+  --text-h2: clamp(1.75rem, 3.4vw, 2.75rem);
+  --text-h3: 1.375rem;
   --text-body: 1.0625rem;
   --text-prose: 1.125rem;
   --text-caption: 0.8125rem;
+  --text-script: clamp(1.75rem, 3vw, 2.5rem);
 
-  --leading-display: 1.02;
-  --leading-h2: 1.1;
-  --leading-body: 1.65;
+  --leading-display: 1.12;
+  --leading-h2: 1.15;
+  --leading-body: 1.7;
   --leading-prose: 1.75;
 
-  --tracking-display: -0.03em;
-  --tracking-h2: -0.02em;
-  --tracking-caption: 0.06em;
+  /* The reference sets its display type wide and airy rather than tight. */
+  --tracking-display: 0.01em;
+  --tracking-h2: 0.01em;
+  --tracking-caption: 0.14em;
 
   /* --- Measure and rhythm ----------------------------------------------- */
-  --measure: 68ch;
-  --gutter: clamp(1.25rem, 5vw, 4rem);
+  --measure: 66ch;
+  --gutter: clamp(1.25rem, 5vw, 4.5rem);
+  --shell: 78rem;
   --band-y: clamp(3.5rem, 8vw, 7rem);
   --hairline: 1px;
+  --radius-arch: 50% 50% 0 0 / 38% 38% 0 0;
 
   /* --- Motion ------------------------------------------------------------
      One reveal language. Do not add per-section variants. */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --dur-reveal: 0.7s;
   --dur-swap: 0.28s;
-  --stagger: 0.05s;
 }
 
-[data-theme="dark"] {
-  /* --- Dark theme --------------------------------------------------------
+[data-theme="light"] {
+  /* --- Light theme --------------------------------------------------------
      Token          Ratio on --paper   Ratio on --paper-raised
-     --ink              14.63:1              13.51:1
-     --ink-muted         6.23:1               5.75:1
-     --brass             7.69:1               7.10:1
-     --umber             1.41:1               1.31:1   <-- decorative ONLY
+     --ink              13.06:1              14.27:1
+     --ink-muted         5.35:1               5.84:1
+     --brass             5.07:1               5.54:1
+     --umber             9.22:1              10.07:1
      ---------------------------------------------------------------------- */
-  --paper: #17120e; /* espresso, never pure black */
-  --paper-raised: #211a14;
-  --ink: #ede3d2;
-  --ink-muted: #a3937e;
-  --brass: #c9a227;
-  --umber: #3a2e24;
-
-  --mat-brick: #4a3428;
-  --mat-mortar: #2a2119;
-  --mat-stucco: #2e251c;
-  --mat-concrete: #3a3128;
-  --mat-roof: #1d1712;
-  --mat-trim: #7a6c5c;
+  --paper: #efe8da; /* warm parchment */
+  --paper-raised: #f7f2e8;
+  --paper-sunken: #e5dccb;
+  --ink: #2a2019;
+  --ink-muted: #6b5b4a;
+  --brass: #7e5b18; /* darker here: the tan gold fails AA on parchment */
+  --brass-deep: #5c4211;
+  --umber: #4a3728;
 
   --rule: var(--umber);
-  /* umber measures 1.41:1 here and fails the 3:1 non-text requirement.
-     WCAG 2.2 SC 1.4.11 exempts purely decorative hairlines, so --rule may
-     keep it, but anything a user must see to operate resolves to ink-muted
-     at 6.23:1 instead. Do not point --line-ui back at umber. */
-  --line-ui: var(--ink-muted);
+  --line-ui: var(--umber);
+  --scrim: color-mix(in oklab, var(--paper) 70%, transparent);
 }
 
-/* Tailwind 4 CSS-first config. Exposes the tokens as utility classes
-   (bg-paper, text-ink-muted, border-line-ui and so on) without duplicating
-   any literal value. */
+/* Tailwind 4 CSS-first config. Exposes the tokens as utility classes without
+   duplicating any literal value. */
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-raised: var(--paper-raised);
+  --color-paper-sunken: var(--paper-sunken);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-brass: var(--brass);
+  --color-brass-deep: var(--brass-deep);
   --color-umber: var(--umber);
   --color-rule: var(--rule);
   --color-line-ui: var(--line-ui);
 
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --font-script: var(--font-script);
   --font-prose: var(--font-prose);
 }

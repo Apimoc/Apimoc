@@ -7,13 +7,44 @@ The build prints this same list every time it runs, so it cannot be forgotten:
 
 ```
   ┌─ Not filled in yet ──────────────────────────────────────────────
-  │  identity.fullName
   │  contact.emailUser
-  │  ...
+  │  contact.emailDomain
+  │  contact.phone
+  │  contact.linkedin
+  │  contact.instagram
+  │  contact.facebook
+  │  contact.office
+  │  siteUrl (still https://example.com)
+  │  assets.hero (src/assets/hero.jpg)
+  │  assets.guidebook (src/assets/guidebook.jpg)
+  │
+  │  Edit src/content/site.ts. See PLACEHOLDERS.md.
   └──────────────────────────────────────────────────────────────────
 ```
 
-Everything except the two files is in **one file**: `src/content/site.ts`.
+Everything except the three photographs is in **one file**:
+`src/content/site.ts`.
+
+---
+
+## Already filled in
+
+These are set, and are what you see on the site now. Change them in the same
+file if any of it is wrong.
+
+| Value | Currently |
+|---|---|
+| `identity.fullName` | Sarah Brown |
+| `identity.shortName` | Sarah |
+| `identity.signature` | Sarah B. |
+| `identity.brand` | Top Real Estate |
+| `identity.jobTitle` | Real Estate Specialist |
+| `identity.location` | Denver, Colorado |
+
+**The portrait is in place.** It is at `src/assets/portrait.jpg` and
+`portraitReady` is `true`, so it appears in the hero arch on the landing page
+and again in the About section and on `/about`. Replace the file with the same
+name to change it; nothing else needs editing.
 
 ---
 
@@ -21,25 +52,34 @@ Everything except the two files is in **one file**: `src/content/site.ts`.
 
 | Value | Where | Notes |
 |---|---|---|
-| `identity.location` | `site.ts` | `Greater Boston`, or `Rome, NY → Greater Boston` |
 | `contact.emailUser` | `site.ts` | Part before the `@`. Use a dedicated address |
 | `contact.emailDomain` | `site.ts` | Part after the `@` |
-| `contact.linkedin` | `site.ts` | Full URL including `https://` |
-| `seo.defaultDescription` | `site.ts` | One sentence, under 160 characters |
+| `contact.phone` | `site.ts` | Formatted as you want it read, e.g. `(303) 555-0100` |
 | `siteUrl` + `siteUrlIsReal` | `site.ts` | The real domain. See below |
-| `assets.portrait` | `src/assets/portrait.jpg` | Then set `portraitReady: true` |
-| `assets.cv` | `public/cv.pdf` | Then set `cvReady: true` |
+| `assets.hero` | `src/assets/hero.jpg` | Then set `heroReady: true` |
+| `assets.guidebook` | `src/assets/guidebook.jpg` | Then set `guidebookReady: true` |
 
-Name, short name, post-nominals and job title are now filled in
-(`Alexandra Denton, ARM®`, Multi-Site Property Manager). Change them in the
-same file if any of it is wrong.
+**The phone number is required here, unlike the earlier version of this site.**
+A real estate agent who cannot be called is a real estate agent who does not get
+the listing. Leaving it as `TODO:` is still safe: it is simply omitted
+everywhere rather than published half-finished.
+
+### Listing photographs
+
+The four listings under `src/content/listings/` each name their photos in the
+`images` field. Those files are not supplied either. Each unfilled slot draws
+a plate at the right aspect ratio, so the gallery is already the shape it will
+be. `CONTENT.md` covers adding them.
 
 ## Optional
 
 | Value | Where | Effect if left as-is |
 |---|---|---|
-| `seo.worksFor` | `site.ts` | The employer field is omitted from JSON-LD |
-| `seo.alumniOf` | `site.ts` | The education field is omitted from JSON-LD |
+| `contact.linkedin` | `site.ts` | The link is not rendered |
+| `contact.instagram` | `site.ts` | The link is not rendered |
+| `contact.facebook` | `site.ts` | The link is not rendered |
+| `contact.office` | `site.ts` | The address block is omitted from the contact page |
+| `seo.worksFor` | `site.ts` | The brokerage field is omitted from JSON-LD |
 | `features.analyticsToken` | `site.ts` | No analytics. Cloudflare Web Analytics is cookieless |
 | `assets.portraitAlt` | `site.ts` | Needed once a portrait exists, for screen readers |
 
@@ -50,44 +90,54 @@ same file if any of it is wrong.
 They do not ship as broken links or empty boxes. Each one has a designed
 unfilled state:
 
-- **Email and LinkedIn** links are not rendered at all, rather than pointing
-  nowhere. This means **the two call-to-action buttons on the home page are
-  currently absent.** They appear as soon as `contact.emailUser` is set.
-- **The CV download button** appears only once `cvReady` is `true`.
-- **The portrait** shows a ruled plate at the correct aspect ratio, so the
-  layout is already the shape it will be with the real photo in place.
-- **The meta description** is omitted rather than published as `TODO:`.
+- **Email, phone and social links** are not rendered at all, rather than
+  pointing nowhere. On the contact page this means the direct-contact column is
+  shorter than it will be; the form itself works regardless.
+- **Photographs** show a ruled plate at the correct aspect ratio, inside the
+  same arch crop the real photo will get. The layout is already the shape it
+  will be, so dropping in a file shifts nothing.
 - **JSON-LD fields** are omitted individually. Search engines treat a
   placeholder as a factual claim, so an unconfigured site emits a small
   correct graph instead of a large wrong one.
 - **The site is not indexable.** While `siteUrlIsReal` is `false`,
   `robots.txt` disallows everything and every page carries `noindex`.
 
-That last one is why the SEO score is currently 58 rather than 100. With the
-config filled in it measures 100. Both numbers are in `ACCEPTANCE.md`.
+That last one is why the Lighthouse SEO score is currently held below 100. It
+is not a defect to fix; it is the guard working. `ACCEPTANCE.md` has both
+numbers, with and without the config filled in.
 
 ---
 
 ## The content itself
 
-The CV content is intentionally blank templates rather than real career data.
-Every `.mdx` file under `src/content/` is a fill-in-the-blanks skeleton:
+Unlike the personal details, the **copy is written**. Every section on every
+page has real text in it, taken from the template the design follows. What is
+placeholder is the factual detail behind it.
 
 ```
-src/content/home/         hero, rent-roll figures, about, contact
-src/content/experience/   role-one, role-two, role-three
-src/content/work/         case-study-one, -two, -three
-src/content/credentials/  cred-one to -three, system-one, -two
-src/content/journal/      first-post, second-post
+src/content/home/         11 files, one per landing page section
+src/content/services/     buying, selling, investment, relocation
+src/content/listings/     4 example listings
+src/content/testimonials/ 4 example testimonials
+src/content/blog/         3 example posts
 ```
+
+The listings, testimonials and blog posts are **examples with the right shape,
+not real records**. Read them before launch and either replace them with real
+ones or delete them. Two in particular need attention:
+
+- **Testimonials name real-sounding clients.** Publishing a testimonial that
+  nobody gave is a straightforward misrepresentation, and in the US it is one
+  the FTC has rules about. Replace all four with real quotes, with permission,
+  or delete the section from `src/content/theme.ts`.
+- **Listings quote prices, addresses and square footage.** All invented.
 
 Each folder also holds a `_template.mdx` with instructions in it. Files whose
 name starts with an underscore are ignored by the build, so a template can
 never publish itself.
 
-Delete the numbered placeholder files once real entries exist. Nothing breaks
-if a folder ends up empty: each page has a written empty state telling you
-which file to copy.
+Nothing breaks if a folder ends up empty: each page has a written empty state
+telling you which file to copy.
 
 `CONTENT.md` explains how to fill all of this in, written for someone who has
 never used a terminal.
@@ -96,10 +146,10 @@ never used a terminal.
 
 ## Accounts needed before the contact form works
 
-The form is built and its handler is tested, but it needs two accounts and
-four environment variables set in the Cloudflare Pages dashboard. Until they
-are set, the form validates and reports an error rather than silently
-failing. `README.md` has the setup steps.
+The form is built and its handler is tested against every path, including all
+the spam ones, but it needs two accounts and five environment variables set in
+the Cloudflare Pages dashboard. Until they are set, the form validates and
+reports an error rather than silently failing. `README.md` has the setup steps.
 
 | Variable | From |
 |---|---|
@@ -109,5 +159,5 @@ failing. `README.md` has the setup steps.
 | `CONTACT_FROM` | A verified sender on your domain |
 | `CONTACT_TO` | Where messages should arrive |
 
-Direct email and LinkedIn links on the contact page work without any of this,
-as soon as `site.ts` is filled in.
+Direct email and phone links work without any of this, as soon as `site.ts` is
+filled in.

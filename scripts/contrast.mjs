@@ -57,8 +57,8 @@ const FLOORS = {
 let failures = 0;
 
 for (const [label, selector] of [
-  ["LIGHT", ":root"],
-  ["DARK", '[data-theme="dark"]'],
+  ["DARK (default)", ":root"],
+  ["LIGHT", '[data-theme="light"]'],
 ]) {
   const tokens = scope(selector);
   console.log(`\n${label}`);
@@ -68,7 +68,7 @@ for (const [label, selector] of [
     const [floor, why] = FLOORS[fg];
     const values = BACKGROUNDS.map((bg) => ratio(tokens[fg], tokens[bg]));
     // umber in dark is decorative only, and is exempted deliberately.
-    const decorative = fg === "umber" && label === "DARK";
+    const decorative = fg === "umber" && label.startsWith("DARK");
     const worst = Math.min(...values);
     const pass = decorative || worst >= floor;
     if (!pass) failures += 1;

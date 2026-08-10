@@ -1,7 +1,7 @@
 import type { APIContext, GetStaticPaths } from "astro";
 import { getCollection } from "astro:content";
 import { renderOgImage } from "../../lib/og";
-import { identity, isPlaceholder } from "../../content/site";
+import { identity } from "../../content/site";
 import { ui } from "../../content/ui";
 import { formatDateLong } from "../../lib/format";
 
@@ -15,9 +15,9 @@ import { formatDateLong } from "../../lib/format";
    an unconfigured site produces something obviously unfinished instead of
    something that looks broken. The build warning names the field to fix. */
 const siteName = () =>
-  isPlaceholder(identity.fullName) ? ui.placeholder.badge : identity.fullName;
+  identity.fullName;
 
-const role = () => (isPlaceholder(identity.jobTitle) ? "" : identity.jobTitle);
+const role = () => identity.jobTitle;
 
 export const getStaticPaths = (async () => {
   const paths: {
@@ -33,20 +33,20 @@ export const getStaticPaths = (async () => {
       props: { heading: "About", eyebrow: siteName(), footer: role() },
     },
     {
-      params: { slug: "experience" },
-      props: { heading: "Experience", eyebrow: siteName(), footer: role() },
+      params: { slug: "services" },
+      props: { heading: "My services", eyebrow: siteName(), footer: role() },
     },
     {
-      params: { slug: "work" },
-      props: { heading: "Case studies", eyebrow: siteName(), footer: role() },
+      params: { slug: "listings" },
+      props: { heading: "Featured listings", eyebrow: siteName(), footer: role() },
     },
     {
-      params: { slug: "credentials" },
-      props: { heading: "Credentials", eyebrow: siteName(), footer: role() },
+      params: { slug: "consultation" },
+      props: { heading: "Book a consultation", eyebrow: siteName(), footer: role() },
     },
     {
-      params: { slug: "journal" },
-      props: { heading: "Journal", eyebrow: siteName(), footer: role() },
+      params: { slug: "blog" },
+      props: { heading: "Blog", eyebrow: siteName(), footer: role() },
     },
     {
       params: { slug: "contact" },
@@ -54,10 +54,10 @@ export const getStaticPaths = (async () => {
     },
   ];
 
-  const posts = await getCollection("journal", ({ data }) => !data.draft);
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
   posts.forEach((post) => {
     paths.push({
-      params: { slug: `journal/${post.id}` },
+      params: { slug: `blog/${post.id}` },
       props: {
         heading: post.data.title,
         eyebrow: siteName(),
@@ -66,14 +66,14 @@ export const getStaticPaths = (async () => {
     });
   });
 
-  const work = await getCollection("work", ({ data }) => !data.draft);
-  work.forEach((item) => {
+  const listings = await getCollection("listings", ({ data }) => !data.draft);
+  listings.forEach((item) => {
     paths.push({
-      params: { slug: `work/${item.id}` },
+      params: { slug: `listings/${item.id}` },
       props: {
         heading: item.data.title,
         eyebrow: siteName(),
-        footer: role(),
+        footer: item.data.location,
       },
     });
   });

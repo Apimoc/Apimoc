@@ -1,16 +1,18 @@
-# Personal CV, portfolio and journal
+# Real estate agent website
 
-A production site for a multi-site property manager: CV, case studies, a
-journal, and a contact form. Static, self-hosted fonts, no third-party
-trackers, deployed to Cloudflare Pages.
+A ten-page site for a residential real estate agent: services, listings, a
+consultation booking page, an about page, a blog, and a contact form. Static,
+self-hosted fonts, no third-party trackers, deployed to Cloudflare Pages.
 
-The content is intentionally **blank templates**. The machine is finished; the
-CV itself is filled in by editing files under `src/content/`. See
-[`PLACEHOLDERS.md`](PLACEHOLDERS.md) for what is outstanding and
-[`CONTENT.md`](CONTENT.md) for how to fill it in without using a terminal.
+The layout, copy and section structure are finished, and the portrait is in
+place. What is not filled in is the personal detail: email address, phone,
+social links, the real domain, and two remaining photographs (the hero
+background and the guidebook cover). See [`PLACEHOLDERS.md`](PLACEHOLDERS.md)
+for that list and
+[`CONTENT.md`](CONTENT.md) for how to work through it without using a terminal.
 
-- [`ACCEPTANCE.md`](ACCEPTANCE.md) — measured results against the brief
-- [`COPY-REVIEW.md`](COPY-REVIEW.md) — every line of copy written rather than supplied
+- [`ACCEPTANCE.md`](ACCEPTANCE.md) — measured results, not claimed ones
+- [`COPY-REVIEW.md`](COPY-REVIEW.md) — every line of copy, and where it came from
 
 ---
 
@@ -39,40 +41,61 @@ and fails with a plain-English message if a content file has a bad field.
 
 ---
 
+## The ten pages
+
+| Route | What it is |
+|---|---|
+| `/` | Landing page. Eleven sections, reorderable from one array |
+| `/services` | The four services, each with its own file |
+| `/listings` | Featured listings index |
+| `/listings/[slug]` | A single listing, with specs, gallery and enquiry link |
+| `/consultation` | Booking form: enquiry type, timeline, message |
+| `/about` | Longer biography, the figures, credentials |
+| `/contact` | Form, email, phone, office address, social links |
+| `/blog` | Post index with tag filtering |
+| `/blog/[slug]` | A post |
+| `/404` | Not found |
+
+Plus `/blog/rss.xml`, `/robots.txt`, `/sitemap-index.xml`, and a generated
+Open Graph image per page under `/og/`.
+
+---
+
 ## Architecture
 
 | Layer | Choice | Version |
 |---|---|---|
 | Framework | Astro, static output | 7.1.6 |
-| Islands | React | 19.2.8 |
-| 3D | three.js + React Three Fiber | 0.185.1 / 9.7.0, **WebGL only** |
 | Animation | GSAP + ScrollTrigger + SplitText | 3.15.0 |
 | Smooth scroll | Lenis, desktop pointer devices only | 1.3.26 |
 | Styling | Tailwind CSS, CSS-first config | 4.3.3 |
 | Content | Astro content collections + MDX, Zod 4 | built in |
+| OG images | Satori + sharp, at build time | 0.29 / 0.34.4 |
 | Hosting | Cloudflare Pages | |
 | Forms | Pages Function + Turnstile + Resend | |
 
-R3F 9 does not fully support the three.js WebGPU renderer, so the canvas is
-WebGL only and does not probe for one.
+There is no client-side framework. Every page is server-rendered HTML; the
+only JavaScript is the theme toggle, the mobile menu, the tag filter, the
+contact form and the scroll reveals.
 
 ### Where things live
 
 ```
 src/
   content/           EVERY user-facing string starts here
-    site.ts            name, contact, feature switches, the stack's numbers
-    theme.ts           home page section order
-    ui.ts              button labels, empty states, form errors
-    home/ experience/ work/ credentials/ journal/    MDX
+    site.ts            name, contact, feature switches, SEO defaults
+    theme.ts           home page section order, motion, listing counts
+    ui.ts              button labels, empty states, form errors, page headings
+    home/              one MDX file per landing page section
+    services/ listings/ testimonials/ blog/    MDX
   content.config.ts  Zod 4 schemas, with messages a non-developer can act on
   styles/
     tokens.css         the ONLY file containing a hex color
     global.css         type roles, layout primitives
-    prose.css          journal only, and where Literata is declared
-  components/        Astro components, plus the one React island
-  layouts/           Base, Page, and the journal post layout
-  lib/               motion, tiering, stack geometry, OG rendering
+    prose.css          blog only, and where Literata is declared
+  components/        Astro components
+  layouts/           Base and Page
+  lib/               motion, formatting, OG rendering, token parsing
   pages/             routes
 functions/api/       Cloudflare Pages Function for the contact form
 scripts/             the measurement tools listed below
@@ -81,30 +104,18 @@ scripts/             the measurement tools listed below
 ### Three decisions worth knowing about
 
 **The animation layer is dynamically imported.** GSAP, ScrollTrigger and
-SplitText together are about 46 kB gzipped, which is the entire per-route
+SplitText together are about 46 kB gzipped, which is most of the per-route
 budget on its own. They load after the page is interactive, and the
 reduced-motion check happens *before* the import, so a visitor who has asked
 for less motion downloads no animation library at all. This is what keeps
-every route at 9.2 kB instead of 54.6 kB.
+every route at 8.6 kB instead of 54.6 kB.
 
-**The 3D building is on every route and still never on the critical path.**
-Each page shows a cutaway apartment building that turns as you scroll: floor
-plates, party walls, balcony railings and a door number on every unit, with
-occupied units lit from within. It is generated in code, not imported: the
-brick, stucco and concrete are procedural canvas textures, and the environment
-lighting is built from emissive planes rather than a downloaded HDRI, because
-nothing may be fetched from another host.
-
-The flat elevation of the same building is server-rendered and ships in the
-HTML, so it carries the first paint. The React island replaces it only after
-the main thread goes idle, only when the canvas is near the viewport, and only
-on devices that pass a tier check. Weak devices get a lighter build (no
-shadows, lower pixel ratio) rather than nothing. Reduced motion, saveData and
-no-WebGL keep the flat drawing, which is a finished piece of design rather
-than a degraded state.
-
-Per-page building size, occupancy and rotation live in
-`src/content/scenes.ts`, one line per route.
+**Every photograph goes through one component.** `Figure.astro` owns the arch
+crop, the aspect ratio and the unfilled state. When a photo is missing it
+draws a designed plate at exactly the right shape rather than collapsing, so
+the layout you are looking at now is the layout you get once the real photos
+land. Adding a photo is dropping a file and flipping one boolean; nothing
+shifts.
 
 **The Content Security Policy is generated, not hand-written.** Astro hashes
 every inline script at build time and emits the policy as a meta element. The
@@ -115,6 +126,14 @@ scripts anywhere.
 
 `frame-ancestors` cannot be delivered via a meta element, so that single
 directive lives in `public/_headers` with the other security headers.
+
+### The theme is dark by default
+
+`:root` holds the dark palette and `[data-theme="light"]` is the override, so
+the default state needs no class and cannot flash. The pre-paint script only
+switches to light when the visitor has explicitly chosen it. The operating
+system preference is deliberately not followed: this is a dark-first design,
+and light is opt-in.
 
 ---
 
@@ -194,18 +213,23 @@ npm run audit:strings    # proves no user-facing string is hardcoded
 npm run test:contact     # the contact handler, including every spam path
 ```
 
-These four need the built site being served. Build, serve `dist/`, then:
+These three need the built site being served. Build, serve `dist/`, then:
 
 ```bash
 npm run audit:a11y  -- http://localhost:4321   # axe-core, all routes, both themes
-npm run verify      -- http://localhost:4321   # theme, tiering, keyboard, form
+npm run verify      -- http://localhost:4321   # theme, keyboard, form, overflow
 npm run shots       -- http://localhost:4321   # 390/768/1280/1920, both themes
 ```
 
 `npm run verify` covers the things only a real browser can answer: that there
-is no flash of the wrong theme, that each of the four fallback triggers
-actually serves the SVG, that the mobile menu traps focus and restores it on
-Escape, and that the contact form announces its errors.
+is no flash of the wrong theme, that the choice survives a reload, that the
+mobile menu traps focus and restores it on Escape, that the contact form
+announces its errors, and that no route scrolls horizontally at any of five
+widths down to 320 px.
+
+`npm run audit:strings` works from the **built HTML**, not from source. That is
+the only way to catch a label that was hardcoded in a component: reading source
+would just find the string in both places and call it fine.
 
 ### Single-file preview
 
@@ -243,8 +267,12 @@ pip install fonttools brotli
 npm run fonts
 ```
 
-This narrows the variable axis ranges and the character set, taking the two
-preloaded files from 96 kB to 74 kB. It writes into `public/fonts/`.
+This narrows the variable axis ranges and the character set. It writes into
+`public/fonts/`.
+
+One useful side effect: subsetting Fraunces to a narrow `opsz` range drops the
+`WONK` axis from the file entirely, which locks the wonky serif variant off
+structurally. No CSS override is needed, and none can be forgotten.
 
 ---
 
@@ -254,23 +282,25 @@ Lighthouse mobile, home page, served with compression as Cloudflare does:
 
 | | |
 |---|---|
-| Performance | 99 |
 | Accessibility | 100 |
 | Best practices | 100 |
-| SEO | 100 |
-| LCP | 2.0 s, and the LCP element is the `<h1>` text |
 | CLS | 0 |
 | axe-core violations | 0, across 10 routes in both themes |
-| JavaScript per route | 10.6 kB gzipped, against a 50 kB budget |
+| JavaScript per route | 8.6 kB gzipped, against a 50 kB budget |
+| Contrast | every pair passes; lowest is 5.07:1 against a 4.5:1 floor |
 
-Full detail, including the numbers with the config still unfilled, is in
-[`ACCEPTANCE.md`](ACCEPTANCE.md).
+Full detail, including why the SEO score is currently held down on purpose, is
+in [`ACCEPTANCE.md`](ACCEPTANCE.md).
 
 ---
 
 ## Licensing
 
 GSAP, including SplitText and the other former Club plugins, has been free for
-commercial use since April 2025 under Webflow. Fraunces, Instrument Sans and
-Literata are all SIL Open Font License. All three are self-hosted; the site
-makes no request to a font CDN.
+commercial use since April 2025 under Webflow. Fraunces, Instrument Sans,
+Literata and Allura are all SIL Open Font License. All four are self-hosted;
+the site makes no request to a font CDN.
+
+The listing photographs, the portrait and the guidebook cover are **not**
+supplied. Those slots are empty by design, and `PLACEHOLDERS.md` says where
+each file goes.

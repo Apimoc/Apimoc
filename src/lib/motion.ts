@@ -165,31 +165,32 @@ export async function initMotion() {
     reveals(document);
     void startSmoothScroll();
 
-    /* Trigger positions are measured at creation. Two things move them
-       afterwards: web fonts swapping in and changing text height, and the 3D
-       island mounting into a previously empty box. Without a refresh, every
-       trigger below the fold keeps its stale start position and sections
-       silently never reveal. */
+    /* Trigger positions are measured at creation, and web fonts swapping in
+       changes text height after that. Without a refresh, every trigger below
+       the fold keeps its stale start position and sections silently never
+       reveal. */
     document.fonts?.ready.then(() => ScrollTrigger?.refresh());
-    window.addEventListener("stack:mounted", () => ScrollTrigger?.refresh());
-
+  
     return () => {
       document.documentElement.classList.remove("is-armed");
     };
   });
 }
 
-/** Restores the chosen theme after a view transition swaps the document. */
+/**
+ * Restores the chosen theme after a view transition swaps the document.
+ * Mirrors the pre-paint script exactly, including its dark default: if the
+ * two disagreed, the theme would flip on the first client-side navigation.
+ */
 export function reapplyTheme() {
+  const root = document.documentElement;
   try {
     const stored = localStorage.getItem("theme");
-    const dark = stored
-      ? stored === "dark"
-      : window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const root = document.documentElement;
+    const dark = stored ? stored !== "light" : true;
     root.dataset.theme = dark ? "dark" : "light";
     root.style.colorScheme = dark ? "dark" : "light";
   } catch {
-    document.documentElement.dataset.theme = "light";
+    root.dataset.theme = "dark";
+    root.style.colorScheme = "dark";
   }
 }

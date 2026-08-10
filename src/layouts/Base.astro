@@ -52,7 +52,7 @@ const ogImage = new URL(`/og/${ogSlug}.png`, siteUrl).href;
 const blockIndexing = noindex || !siteUrlIsReal;
 ---
 
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -108,12 +108,12 @@ const blockIndexing = noindex || !siteUrlIsReal;
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    {features.journal && (
+    {features.blog && (
       <link
         rel="alternate"
         type="application/rss+xml"
-        title={ui.journal.rssLabel}
-        href={new URL("/journal/rss.xml", siteUrl).href}
+        title={ui.blog.rssLabel}
+        href={new URL("/blog/rss.xml", siteUrl).href}
       />
     )}
 

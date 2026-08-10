@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { defineConfig } from "astro/config";
 import mdx from "@astrojs/mdx";
-import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -42,20 +41,17 @@ export default defineConfig({
   output: "static",
 
   integrations: [
-    react(),
     mdx(),
     sitemap({
       filter: (page) =>
-        // Keep the journal out of the sitemap while it is switched off.
-        features.journal || !page.includes("/journal"),
+        // Keep the blog out of the sitemap while it is switched off.
+        features.blog || !page.includes("/blog"),
     }),
   ],
 
   vite: {
     plugins: [tailwindcss()],
     build: {
-      // The 3D island is the only large chunk. Keeping it separate is what
-      // lets every other route stay under the JS budget.
       cssCodeSplit: true,
     },
   },
@@ -90,9 +86,9 @@ export default defineConfig({
         ],
       },
       styleDirective: {
-        // Style ATTRIBUTES only, scoped to style-src-attr. React Three Fiber
-        // sets inline styles on the canvas element and an attribute cannot be
-        // hashed. <style> elements stay strictly hashed via style-src-elem.
+        // Style ATTRIBUTES only, scoped to style-src-attr, for the handful of
+        // inline custom properties the layout sets. <style> elements stay
+        // strictly hashed via style-src-elem.
         resources: [
           { resource: "'self'", kind: "element" },
           { resource: "'unsafe-inline'", kind: "attribute" },

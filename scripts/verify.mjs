@@ -2,8 +2,8 @@ import { chromium } from "@playwright/test";
 
 /**
  * The acceptance checks that need a real browser and cannot be read off a
- * build artifact: theme flash, the performance tiers, keyboard operability
- * and the contact form's client-side behavior.
+ * build artifact: theme flash and persistence, keyboard operability, the
+ * contact form's client-side behavior, and horizontal overflow.
  *
  * Usage:  node scripts/verify.mjs [baseUrl]
  */
@@ -47,9 +47,13 @@ for (const scheme of ["light", "dark"]) {
     getComputedStyle(document.body).backgroundColor,
   );
 
+  /* Dark is the default regardless of the system setting: this is a
+     dark-first brand and the light theme is opt-in. What must never happen
+     is a flash, so the value read at the earliest moment has to already be
+     the settled one. */
   check(
-    `theme matches system (${scheme}), no flash`,
-    early === scheme && settled === scheme,
+    `no flash of the wrong theme (system ${scheme})`,
+    early === "dark" && settled === "dark",
     `first-read=${early} settled=${settled} bg=${bg}`,
   );
   await context.close();
@@ -70,116 +74,10 @@ for (const scheme of ["light", "dark"]) {
   );
   check(
     "theme toggle persists across reload",
-    after === "dark" && persisted === "dark",
+    after === "light" && persisted === "light",
     `toggled=${after} after-reload=${persisted}`,
   );
   await context.close();
-}
-
-/* -------------------------------------------------------------------------
-   2. Performance tiers. Each of these must serve the SVG fallback and never
-   mount the 3D island.
-   ------------------------------------------------------------------------- */
-async function stackState(contextOptions, initScript) {
-  const context = await browser.newContext(contextOptions);
-  const page = await context.newPage();
-  if (initScript) await page.addInitScript(initScript);
-  await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(3000);
-  const state = await page.evaluate(() => ({
-    mounted:
-      document.querySelector("[data-scene-host]")?.dataset.mounted === "true",
-    canvas: !!document.querySelector("[data-scene-host] canvas"),
-    fallbackVisible:
-      document.querySelector("[data-scene-fallback]")?.dataset.replaced !==
-      "true",
-    fallbackUnits: document.querySelectorAll("[data-scene-fallback] .room")
-      .length,
-    quality: document.querySelector("[data-scene-host]")?.dataset.quality,
-  }));
-  await context.close();
-  return state;
-}
-
-{
-  const normal = await stackState({ viewport: { width: 1280, height: 900 } });
-  check(
-    "3D building mounts on a capable device",
-    normal.mounted && normal.canvas,
-    JSON.stringify(normal),
-  );
-}
-
-{
-  const reduced = await stackState({
-    viewport: { width: 1280, height: 900 },
-    reducedMotion: "reduce",
-  });
-  check(
-    "reduced motion serves the flat elevation, no 3D",
-    !reduced.mounted && !reduced.canvas && reduced.fallbackVisible,
-    JSON.stringify(reduced),
-  );
-}
-
-{
-  const noWebgl = await stackState({ viewport: { width: 1280, height: 900 } }, () => {
-    const original = HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
-      if (String(type).startsWith("webgl")) return null;
-      return original.call(this, type, ...rest);
-    };
-  });
-  check(
-    "WebGL unavailable serves the flat elevation",
-    !noWebgl.mounted && !noWebgl.canvas && noWebgl.fallbackVisible,
-    JSON.stringify(noWebgl),
-  );
-}
-
-{
-  const saveData = await stackState({ viewport: { width: 1280, height: 900 } }, () => {
-    Object.defineProperty(navigator, "connection", {
-      value: { saveData: true },
-      configurable: true,
-    });
-  });
-  check(
-    "saveData serves the flat elevation",
-    !saveData.mounted && !saveData.canvas,
-    JSON.stringify(saveData),
-  );
-}
-
-{
-  const lowMem = await stackState({ viewport: { width: 1280, height: 900 } }, () => {
-    Object.defineProperty(navigator, "deviceMemory", {
-      value: 4,
-      configurable: true,
-    });
-  });
-  /* A low-memory device still gets a building, just a cheaper one: no
-     shadows and a lower pixel ratio. Dropping 3D entirely there would break
-     the brief, which asks for it on every device. */
-  check(
-    "low-memory device gets the lighter 3D build, not none",
-    lowMem.mounted && lowMem.quality === "low",
-    JSON.stringify(lowMem),
-  );
-}
-
-/* The fallback must be complete on its own, notch included. */
-{
-  const fb = await stackState({
-    viewport: { width: 1280, height: 900 },
-    reducedMotion: "reduce",
-  });
-  // The home scene is 6 floors of 5 units. See src/content/scenes.ts.
-  check(
-    "flat elevation draws every unit",
-    fb.fallbackUnits === 30,
-    `${fb.fallbackUnits} units drawn`,
-  );
 }
 
 /* -------------------------------------------------------------------------
@@ -363,17 +261,17 @@ async function stackState(contextOptions, initScript) {
    ------------------------------------------------------------------------- */
 {
   const ROUTES = [
-    "/",
-    "/about",
-    "/experience",
-    "/work",
-    "/work/case-study-one",
-    "/credentials",
-    "/journal",
-    "/journal/first-post",
-    "/contact",
-    "/404",
-  ];
+  "/",
+  "/about",
+  "/services",
+  "/listings",
+  "/listings/cherry-creek-townhome",
+  "/consultation",
+  "/blog",
+  "/blog/what-your-offer-says",
+  "/contact",
+  "/404",
+];
   const offenders = [];
 
   for (const width of [320, 390, 768, 1280, 1920]) {

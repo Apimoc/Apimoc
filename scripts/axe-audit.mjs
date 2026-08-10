@@ -10,15 +10,37 @@ import AxeBuilder from "@axe-core/playwright";
 
 const BASE = process.argv[2] ?? "http://localhost:4321";
 
+/* `best-practice` is included alongside the WCAG tags because heading-order
+   lives there rather than under a success criterion, and a document that
+   jumps h1 to h3 is a real navigation problem for a screen reader user even
+   though no SC names it. Both classes of bug were caught this way. */
+const TAGS = [
+  "wcag2a",
+  "wcag2aa",
+  "wcag21a",
+  "wcag21aa",
+  "wcag22aa",
+  "best-practice",
+];
+
+/* Experimental rules are off by default in axe. This one implements SC 2.5.3
+   Label in Name, which is AA, so its default-off state is a packaging
+   decision rather than a statement about the criterion. It caught the header
+   logotype announcing "Home" over visible text reading the brand name. */
+const RULES = { "label-content-name-mismatch": { enabled: true } };
+
+const audit = (page) =>
+  new AxeBuilder({ page }).withTags(TAGS).options({ rules: RULES }).analyze();
+
 const ROUTES = [
   "/",
   "/about",
-  "/experience",
-  "/work",
-  "/work/case-study-one",
-  "/credentials",
-  "/journal",
-  "/journal/first-post",
+  "/services",
+  "/listings",
+  "/listings/cherry-creek-townhome",
+  "/consultation",
+  "/blog",
+  "/blog/what-your-offer-says",
   "/contact",
   "/404",
 ];
@@ -38,9 +60,7 @@ for (const theme of ["light", "dark"]) {
     await page.goto(`${BASE}${route}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(900);
 
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
-      .analyze();
+    const results = await audit(page);
 
     total += results.violations.length;
     results.violations.forEach((v) => {
@@ -53,9 +73,7 @@ for (const theme of ["light", "dark"]) {
     if (route === "/") {
       await page.click("#menu-button");
       await page.waitForTimeout(400);
-      const open = await new AxeBuilder({ page })
-        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
-        .analyze();
+      const open = await audit(page);
       total += open.violations.length;
       open.violations.forEach((v) => {
         failures.push(

@@ -9,8 +9,8 @@ import { load } from "cheerio";
  * Walks the built HTML, follows every module script and its static imports
  * transitively, and sums the unique files. Dynamic imports are counted
  * separately, because a chunk behind an import() is not on the critical path:
- * the 3D island is only fetched on devices that pass the tier check, and only
- * after the main thread is idle.
+ * the animation layer is only fetched after the main thread is idle, and not
+ * at all for a visitor who has asked for reduced motion.
  *
  * Usage:  node scripts/js-budget.mjs
  */
@@ -111,7 +111,7 @@ for (const file of htmlFiles(DIST).sort()) {
       }
     }, 0) + inlineBytes;
 
-  // Follow the deferred graph so the 3D island's true cost is visible.
+  // Follow the deferred graph so the animation layer's true cost is visible.
   const dynSeen = new Set();
   const dynDyn = new Set();
   [...deferred].forEach((f) => walk(f, dynSeen, dynDyn));
@@ -169,8 +169,8 @@ for (const { f, kb } of deferred.slice(0, 10)) {
 
 console.log(
   `\n  Budget is ${BUDGET_KB} kB gzipped of eagerly loaded JS per route.` +
-    `\n  The 3D island and the animation layer are both deferred: fetched after` +
-    `\n  the page is interactive, and skipped entirely under reduced motion or` +
-    `\n  on devices that fail the tier check.\n`,
+    `\n  The animation layer is deferred: fetched after the page is` +
+    `\n  interactive, and never downloaded at all under reduced motion,` +
+    `\n  because the check happens before the import.\n`,
 );
 process.exit(over > 0 ? 1 : 0);

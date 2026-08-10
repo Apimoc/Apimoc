@@ -1,75 +1,187 @@
 # Copy review
 
-Every line of text on this site that was written rather than supplied, listed
-so it can be rewritten in her own voice.
+Every line of text on this site, and where it came from, so it can be checked
+and rewritten in her own voice before launch.
 
-The CV content itself is **not** here: it was deliberately left as blank
-templates. What follows is the interface copy, which had to say something in
-order for the site to function.
+There are three sources, and it matters which is which:
 
-House style applied throughout, from the brief:
-
-- American English, US date formats.
-- No em dashes anywhere.
-- No exclamation marks, no rhetorical questions as headings.
-- Section headings plain and functional, not clever.
-- Errors say what to do next. They do not apologize and are never vague.
-- Banned phrases avoided: passionate about, results-driven, detail-oriented,
-  proven track record, dynamic professional, leverage, spearheaded, seasoned,
-  dedicated professional, wearing many hats, hit the ground running.
+| Source | What it is |
+|---|---|
+| **Template** | Taken from the Squarespace real estate template this design follows, as requested |
+| **Mine** | Written for this build because the section needed words and the template had none |
+| **Example** | Invented records with the right shape: listings, testimonials, blog posts |
 
 ---
 
-## 1. Interface strings
+## Read this first
 
-**File:** `src/content/ui.ts`. All of it is mine. The ones worth a second look:
+**Two of the three sources need action before launch, for different reasons.**
+
+**Template copy** is the demo text from a commercial Squarespace template.
+Using it was an explicit instruction, and this document is not relitigating
+that. But two practical notes: a demo template's copy is on every other site
+that started from the same template, so it does not differentiate, and it
+makes factual claims (see the figures below) that are currently not true of
+anybody. Rewriting it in her voice is the single highest-value edit available.
+
+**Example records** are invented and one category of them is a legal problem,
+not a taste problem. See section 6.
+
+---
+
+## 1. Landing page
+
+### Hero, `home/hero.mdx` — **Template**
+
+> **Sarah Brown**
+> Superior living experiences for extraordinary customers
+> Explore listings
+> Scroll down to see more
+
+### The three pillars, `home/pillars.mdx` — **Template**
+
+| Title | Body |
+|---|---|
+| Professional guidance | Experience true professional guidance as we navigate the intricacies of the market together. |
+| Responsive execution | I apply swift and precise execution, ensuring your transactions move seamlessly from concept to reality. |
+| Rewarding results | Join me and discover a community of families and individuals whom I helped find their dream home. |
+
+### About, `home/about.mdx` — **Template**
+
+Also used at the top of `/about`.
+
+> **About me · Meet your real estate specialist**
+>
+> Hello, I'm Sarah Brown, your dedicated real estate professional based in
+> Denver, Colorado.
+>
+> With a genuine passion for creating meaningful connections and turning
+> property dreams into reality, I bring a personalized touch to every client's
+> journey.
+
+### Paired panels, `home/panels.mdx` — **Template**
+
+My Expertise and Work Ethic, both verbatim from the template.
+
+### Figures, `home/figures.mdx` — **Template, and factually unverified**
+
+| | | |
+|---|---|---|
+| 12+ | Years of Professional | *experience* |
+| 1K+ | Customers Served | *with success* |
+| 99% | Satisfaction Rate | *of my clients* |
+
+**These three numbers are the most important thing in this document.** They are
+the template's demo figures. They are presented on the site as statements of
+fact about a named person, under the heading "Why trust me?". Publishing them
+unchanged asserts three things that nobody has verified.
+
+`99% Satisfaction Rate` is the sharpest of the three: a satisfaction rate is a
+measurement, and a specific one implies a survey that produced it.
+
+Replace all three with real numbers, or delete the section by setting
+`{ id: "figures", enabled: false }` in `src/content/theme.ts`.
+
+### Guidebook, `home/guidebook.mdx` — **Template**
+
+> **Now available · The ultimate home buying guidebook**
+>
+> I'm thrilled to offer you my latest creation, "The Ultimate Home Buying
+> Guide". Tailored for both first-time buyers and seasoned investors, this
+> guide walks you through every stage of a purchase, from the first showing to
+> the closing table.
+
+**There is no guidebook.** The button points at the contact page. Either write
+the guide and wire the download up, or turn the section off.
+
+### Why work with me, `home/whyWorkWithMe.mdx` — **Mine**
+
+| Title | Body |
+|---|---|
+| Expertise that serves you | I stay close to the numbers so you do not have to. You get a clear read on what a property is worth and what it will take to get it. |
+| Experienced guidance | Every transaction has a moment where it could go sideways. I have seen most of them, and I will tell you plainly what your options are. |
+| Comprehensive knowledge | Neighborhood by neighborhood, I know what has sold, what has stalled and what is coming. That is what a good offer is built on. |
+
+The template supplied only the three headings. The bodies are mine, written to
+be specific rather than warm, which is the opposite register from the template
+copy above them. That inconsistency is deliberate and worth a decision: pick
+one voice for the whole page.
+
+### Section headings and closing, **Mine**
+
+| Section | Text |
+|---|---|
+| Listings | Featured · Currently on the market |
+| Testimonials | Kind words · What my clients say |
+| Blog | From the blog · Notes on the market |
+| Closing | Let's talk · Let's start making your move |
+
+> Whether you are buying your first home or listing one you have loved for
+> years, the first conversation costs nothing and usually saves time.
+
+---
+
+## 2. Page headers
+
+**File:** `src/content/ui.ts`, under `pages`. All **mine**.
+
+| Page | Eyebrow | Heading | Standfirst |
+|---|---|---|---|
+| Services | What I do | My services | Four ways I work with clients. Most people need one of them. Some need two. |
+| Listings | On the market | Featured listings | Everything currently listed, plus a few recent sales for reference. |
+| Consultation | Let's talk | Book a consultation | Thirty minutes, at no cost, and no obligation at the end of it. |
+| Contact | Say hello | Get in touch | Tell me what you are looking for and I will come back to you within one business day. |
+| Blog | Field notes | Blog | |
+
+Two of these make promises. "Thirty minutes, at no cost" and "within one
+business day" are commitments to a stranger. Change them if either is wrong.
+
+---
+
+## 3. Interface strings
+
+**File:** `src/content/ui.ts`. All **mine**. The ones worth a second look:
 
 | String | Where | Note |
 |---|---|---|
-| `Email %NAME%` | Home, contact | Fills in `shortName`. Becomes "Email Allie" |
-| `Download CV, PDF` | Home, experience | Comma rather than parentheses, to match the document register |
-| `Full CV` | Home | Link under the career rows |
-| `All case studies` | Home | |
-| `More about how I work` | Home | First person, matching the About page |
-| `On arrival` / `What I changed` / `Result` | Case studies | The three-part structure, in plain language rather than Situation/Action/Result |
-| `Summary` | Case studies | Labels the metrics block |
-| `Units` / `Leased` / `Occupancy` / `To stabilize` | Home figures | Column labels. In `home/rent-roll.mdx`, not `ui.ts` |
-| `Period` / `Role` / `Units` / `Program` | Career table | Column headings |
-| `Issued by` | Credentials | |
-| `Systems` | Credentials | Heading for the software group |
-| The 3D building description | Screen readers, in place of the canvas | Describes the cutaway, the door numbers and the lit units |
-| `Set in Fraunces and Instrument Sans.` | Footer | Delete if unwanted. It is a designer's habit, not a requirement |
+| `Email %NAME%` / `Call %NAME%` | Contact, footer | Fills in `shortName`. Becomes "Email Sarah" |
+| `Superior living experiences for extraordinary customers.` | Footer tagline | The hero line, reused. Change both together or they read as a mistake |
+| `Interested in this property?` | Single listing | The one rhetorical question on the site, kept because it labels an action |
+| `Photograph to come` / `Photo to come` | Unfilled photo slots | Visitors should never see these. They mean a photo is missing |
+| `Add the file and switch it on in src/content/site.ts` | Unfilled photo slots | Aimed at whoever is editing, not at a visitor |
 
-### Theme toggle
+### The consultation steps — **Mine**
+
+| Step | Body |
+|---|---|
+| Tell me what you are looking for | Fill in the form below. The more you can tell me about your timeline and your budget, the more useful our first conversation will be. |
+| We talk it through | A thirty minute call, at no cost. I will be straight with you about what is realistic in the current market. |
+| We make a plan | If it is a fit, I will put together a plan for your search or your sale, with the numbers attached. |
+
+### Theme toggle and navigation
 
 | String | Note |
 |---|---|
 | `Switch to dark theme` / `Switch to light theme` | Screen reader labels. They say what pressing it will do, not what state it is in |
-| `Light` / `Dark` | Not currently displayed; available if a visible label is ever wanted |
-
-### Navigation
-
-| String | Note |
-|---|---|
 | `Skip to content` | Standard, first thing a keyboard user reaches |
 | `Open menu` / `Close menu` | Screen reader labels on the mobile menu button |
 | `Home` | Screen reader label on the logotype |
 
 ---
 
-## 2. Empty states
+## 4. Empty states — **Mine**
 
-Written to tell the reader exactly what to do next, and aimed at whoever is
-editing the site rather than at a visitor, because that is who will see them.
+Aimed at whoever is editing the site rather than at a visitor, because that is
+who will see them.
 
-> No roles yet. Add one by copying a file in `src/content/experience/` and
+> No listings yet. Add one by copying `src/content/listings/_template.mdx` and
 > editing the frontmatter.
 
-> No case studies yet. Add one by copying `src/content/work/_template.mdx` and
+> No services yet. Add one by copying `src/content/services/_template.mdx` and
 > editing the frontmatter.
 
-> No credentials yet. Add one by copying a file in `src/content/credentials/`
-> and editing the frontmatter.
+> No testimonials yet. Add one by copying
+> `src/content/testimonials/_template.mdx` and editing the frontmatter.
 
 > No posts yet.
 
@@ -80,19 +192,23 @@ the way out.
 
 ---
 
-## 3. Contact form
+## 5. Forms — **Mine**
 
-**Labels.** Your name, Your email, Company, Message. "Company" is marked
-Optional in the label itself rather than by leaving it unmarked.
+**Contact labels.** Your name, Your email, Your phone, Message. "Your phone" is
+marked Optional in the label itself rather than by leaving it unmarked.
 
-**Success message.** Mine, and the line most worth replacing with her own:
+**Consultation adds** two selects: "What can I help with?" (Buying, Selling,
+Both, Something else) and "Your timeline" (As soon as possible, Within three
+months, Within six months, Just starting to look).
+
+**Success message**, and the line most worth replacing with her own:
 
 > **Message sent**
-> I read everything that comes through here and will reply within two business
-> days.
+> I read everything that comes through here and will reply within one business
+> day.
 
-That promises a response time. Change or delete it if two business days is not
-right.
+That promises a response time. It matches the contact page standfirst; change
+both together.
 
 **Errors.** Each says what to do, in the imperative:
 
@@ -110,15 +226,45 @@ right.
 | Server error | The message did not send. Email me directly at the address below. |
 | Offline | No connection. Check your network and send again. |
 
-The server error deliberately routes to the direct email address rather than
-asking the visitor to try again later. A regional director who wants to make
-contact should never be blocked by a form.
+The server error routes to the direct email address rather than asking the
+visitor to try again later. A buyer who wants to make contact should never be
+blocked by a form.
 
 **Error summary heading.** "Fix these before sending."
 
 ---
 
-## 4. The 404 page
+## 6. Example records — **not real, and one is a legal problem**
+
+### Testimonials, `src/content/testimonials/` — **delete or replace**
+
+Four testimonials, attributed to Joanne, Marcus, Priya and Dev, with locations
+and buyer types. **Nobody said any of them.** They exist to show the section's
+shape.
+
+Publishing an invented testimonial attributed to a client is a
+misrepresentation. In the US the FTC's endorsement rules cover exactly this,
+and they apply to a small agent's website the same as to a national brand.
+
+Three options, in order of preference: replace all four with real quotes given
+with permission; delete the four files and let the written empty state show; or
+turn the section off in `src/content/theme.ts`.
+
+### Listings, `src/content/listings/` — **replace**
+
+Four properties: Cherry Creek Townhome, Wash Park Bungalow, LoHi Loft, Sloan's
+Lake New Build. Every price, address, bed count and square footage is invented.
+Real listings also carry MLS and brokerage disclosure requirements that vary by
+state and are not modeled here.
+
+### Blog posts, `src/content/blog/` — **replace**
+
+Three posts. The advice in them is generic and defensible, but it is not hers
+and it is not written in her voice.
+
+---
+
+## 7. The 404 page — **Mine**
 
 > **404**
 > That page is not here
@@ -129,95 +275,39 @@ No apology, no joke. Two plausible causes and a way out.
 
 ---
 
-## 4b. Landing page copy, NEW and entirely mine
+## 8. House style
 
-The landing page was rewritten from a stat sheet into an introduction. Every
-line below is written by me and is the first thing to replace in her own
-voice. It is deliberately written as a reusable property-management template
-rather than tied to her specific numbers.
+Applied to everything marked **Mine**:
 
-**Headline** (`src/content/home/hero.mdx`):
+- American English, US date formats.
+- No em dashes anywhere.
+- No exclamation marks, no rhetorical questions as headings.
+- Errors say what to do next. They do not apologize and are never vague.
+- Avoided: passionate about, results-driven, detail-oriented, proven track
+  record, dynamic professional, leverage, spearheaded, seasoned, dedicated
+  professional, wearing many hats, hit the ground running.
 
-> I take over properties that are behind and get them compliant and occupied.
+**The template copy does not follow it**, and was not edited to, because the
+instruction was to use the template's text as it stands. Specifically it
+contains "a genuine passion for", "dedicated real estate professional" and
+"seasoned investors", all three of which the house style rules out, plus one
+exclamation-adjacent "I'm thrilled to offer you".
 
-**Standfirst**, same file:
-
-> Multi-site property manager working across affordable and market rate
-> housing. I go into sites that are understaffed or behind on compliance and
-> hand them back stable.
-
-**About paragraph** (`src/content/home/about.mdx`), also used on `/about`:
-
-> I manage multifamily properties, and most of my work starts after something
-> has gone sideways: a lease-up that stalled, recertifications that piled up,
-> a site that lost its manager mid-year.
->
-> The work is unglamorous and specific. Get the files current. Get the units
-> turned and leased. Get the staff trained so the site holds together after I
-> leave. I would rather hand a property back running quietly than tell you a
-> story about it.
-
-**Contact invitation** (`src/content/home/contact.mdx`):
-
-> I am open to multi-site and regional roles. If you have a property that
-> needs steadying, or a portfolio that needs someone who can walk into any of
-> it, get in touch.
-
-The last line of the About paragraph is the one with the most personality and
-the most risk. It is a point of view about how she works, not a fact, so it
-should either be kept because she agrees with it or cut entirely.
-
-No unit counts, no occupancy percentages and no property names appear on the
-landing page by design. Those live on Experience and Work.
+That is a real inconsistency between the two halves of the landing page. It is
+flagged here rather than silently fixed, because the instruction was explicit.
+Say the word and the template copy gets rewritten to the house style in one
+pass.
 
 ---
 
-## 5. Placeholder content in the MDX files
+## 9. Where the decorative arrows live
 
-These are instructions to whoever fills the site in, not copy. Every one of
-them gets deleted as the real content goes in. They are listed so none is
-missed.
+Arrows a screen reader announces (`← Previous`, `Next →` on the blog and
+listing pagers) are part of the label text in `ui.ts`, so they can be changed
+or removed there.
 
-| File | Placeholder text |
-|---|---|
-| `home/rent-roll.mdx` | `000` / `00%` / `0 months` and their labels. Not shown on the landing page; used if `rentRoll` is switched on |
-| `experience/role-*.mdx` | "Most recent role title", "Organization name", bullets |
-| `work/case-study-*.mdx` | "First case study title" and the three sections |
-| `credentials/*.mdx` | "First credential name", "Awarding body" |
-| `journal/*.mdx` | "First post title" and the body |
-
-Search the repository for `Replace this line` and `TODO:` to find anything
-outstanding. `npm run build` prints the config placeholders on every run.
-
----
-
-## 6. Page descriptions
-
-Used as meta descriptions in search results. Mine, and worth a pass:
-
-| Page | Description |
-|---|---|
-| About | How I work, and what I take on. |
-| Experience | Roles, unit counts and programs. |
-| Case studies | What each site looked like on arrival, what changed, and the numbers attached to it. |
-| Credentials | Designations, certifications and the systems I work in. |
-| Journal | Notes on compliance, lease-up and running sites. |
-| Contact | Get in touch by email or through the form. |
-
-The site-wide default description in `site.ts` is still a `TODO:` and is not
-published until it is written. That one matters most: it is what appears under
-the site's name in a search result.
-
----
-
-## 7. A note on the arrows
-
-Arrows that a screen reader announces (`← Previous`, `Next →` on the case study
-and journal pagers) are part of the label text in `ui.ts`, so they can be
-changed or removed there.
-
-Arrows that are purely decorative (the `→` after "Full CV" and similar links)
-are generated by CSS and are not in `ui.ts`. A screen reader never announces
-them, so they are presentation rather than copy. They live in the component's
-stylesheet, which is the one deliberate exception to "every string is in a
-content file".
+Arrows that are purely decorative, the `→` after "View all listings" and
+similar links, are generated by CSS and are not in `ui.ts`. A screen reader
+never announces them, so they are presentation rather than copy. They live in
+the component's stylesheet, which is the one deliberate exception to "every
+string is in a content file".

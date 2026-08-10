@@ -1,64 +1,141 @@
 ---
-import { contact, identity, isPlaceholder } from "../content/site";
+import { contact, identity, nav, features, isPlaceholder } from "../content/site";
 import { ui, fill } from "../content/ui";
 import EmailLink from "./EmailLink.astro";
 
 const year = new Date().getFullYear();
-const name = isPlaceholder(identity.fullName) ? "" : identity.fullName;
-const hasLinkedIn = !isPlaceholder(contact.linkedin);
+
+const items = nav.filter((item) =>
+  item.href === "/blog" ? features.blog : true,
+);
+
+const socials = [
+  { href: contact.linkedin, label: ui.footer.linkedinLabel },
+  { href: contact.instagram, label: ui.footer.instagramLabel },
+  { href: contact.facebook, label: ui.footer.facebookLabel },
+].filter((s) => !isPlaceholder(s.href));
+
+const hasEmail = !isPlaceholder(contact.emailUser);
+const hasPhone = !isPlaceholder(contact.phone);
 ---
 
 <footer class="site-footer">
   <div class="shell inner">
-    <nav class="links" aria-label={ui.footerNavLabel}>
-      <EmailLink label={ui.footer.emailLabel} />
-      {hasLinkedIn && (
-        <a href={contact.linkedin} rel="me noopener noreferrer" target="_blank">
-          {ui.footer.linkedinLabel}
-        </a>
-      )}
+    <div class="brand-col">
+      <p class="brand">{identity.brand}</p>
+      <p class="t-script byline">{identity.fullName}</p>
+      <p class="tagline">{ui.footer.tagline}</p>
+    </div>
+
+    <nav class="col" aria-label={ui.footerNavLabel}>
+      <h2 class="t-caption col-title">{ui.footer.exploreHeading}</h2>
+      <ul>
+        {items.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
     </nav>
-    <p class="meta t-figure">
-      {fill(ui.footer.copyright, { YEAR: year, NAME: name })}
+
+    <div class="col">
+      <h2 class="t-caption col-title">{ui.footer.connectHeading}</h2>
+      <ul>
+        {hasEmail && <li><EmailLink label={ui.footer.emailLabel} /></li>}
+        {hasPhone && (
+          <li>
+            <a href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}>
+              {contact.phone}
+            </a>
+          </li>
+        )}
+        {socials.map((social) => (
+          <li>
+            <a href={social.href} rel="me noopener noreferrer" target="_blank">
+              {social.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="shell bottom">
+    <p class="meta">
+      {fill(ui.footer.copyright, { YEAR: year, NAME: identity.fullName })}
     </p>
   </div>
 </footer>
 
 <style>
   .site-footer {
+    background: var(--paper-sunken);
     border-top: var(--hairline) solid var(--rule);
-    margin-top: var(--band-y);
-    padding-block: 2.5rem calc(2.5rem + env(safe-area-inset-bottom));
+    padding-block: clamp(3rem, 6vw, 4.5rem) 0;
   }
 
   .inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem 2rem;
+    display: grid;
+    gap: 2.5rem;
   }
 
-  .links {
-    display: flex;
-    gap: 1.75rem;
-    flex-wrap: wrap;
-  }
-
-  .links a {
-    font-size: var(--text-caption);
-    letter-spacing: var(--tracking-caption);
+  .brand {
+    margin: 0;
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 24;
+    font-size: 1.125rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    font-weight: 500;
+  }
+
+  .byline {
+    margin: 0.1rem 0 0;
+    font-size: 1.75rem;
+  }
+
+  .tagline {
+    margin: 1rem 0 0;
+    color: var(--ink-muted);
+    max-width: 32ch;
+    font-size: 0.9375rem;
+  }
+
+  .col-title {
+    margin-bottom: 1rem;
+  }
+
+  .col ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .col a {
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    min-height: 24px;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+
+  .col a:hover {
+    color: var(--brass);
+  }
+
+  .bottom {
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding-block: 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+    border-top: var(--hairline) solid var(--rule);
   }
 
   .meta {
     margin: 0;
     font-size: var(--text-caption);
     color: var(--ink-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .inner {
+      grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 0.8fr));
+      gap: 3rem;
+    }
   }
 </style>

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { load } from "cheerio";
 import { build } from "esbuild";
+import { themeInitScript } from "../src/lib/theme-script.js";
 
 /**
  * Packs the built site into ONE self-contained HTML file, for previewing
@@ -12,7 +13,7 @@ import { build } from "esbuild";
  * multi-page static build; here every route's markup is inlined and swapped
  * by a small router, Astro's ClientRouter is dropped (it fetches real URLs),
  * and the fonts are embedded as data URIs. Everything else, including the
- * WebGL stack and the whole reveal system, is the real code.
+ * whole reveal system and the contact form, is the real code.
  *
  * Usage:  node scripts/single-file.mjs [outFile]
  */
@@ -23,15 +24,17 @@ const DIST = "dist";
 const ROUTES = [
   ["/", "dist/index.html"],
   ["/about", "dist/about/index.html"],
-  ["/experience", "dist/experience/index.html"],
-  ["/work", "dist/work/index.html"],
-  ["/work/case-study-one", "dist/work/case-study-one/index.html"],
-  ["/work/case-study-two", "dist/work/case-study-two/index.html"],
-  ["/work/case-study-three", "dist/work/case-study-three/index.html"],
-  ["/credentials", "dist/credentials/index.html"],
-  ["/journal", "dist/journal/index.html"],
-  ["/journal/first-post", "dist/journal/first-post/index.html"],
-  ["/journal/second-post", "dist/journal/second-post/index.html"],
+  ["/services", "dist/services/index.html"],
+  ["/listings", "dist/listings/index.html"],
+  ["/listings/cherry-creek-townhome", "dist/listings/cherry-creek-townhome/index.html"],
+  ["/listings/wash-park-bungalow", "dist/listings/wash-park-bungalow/index.html"],
+  ["/listings/lohi-loft", "dist/listings/lohi-loft/index.html"],
+  ["/listings/sloans-lake-new-build", "dist/listings/sloans-lake-new-build/index.html"],
+  ["/consultation", "dist/consultation/index.html"],
+  ["/blog", "dist/blog/index.html"],
+  ["/blog/what-your-offer-says", "dist/blog/what-your-offer-says/index.html"],
+  ["/blog/pricing-a-home", "dist/blog/pricing-a-home/index.html"],
+  ["/blog/first-year-costs", "dist/blog/first-year-costs/index.html"],
   ["/contact", "dist/contact/index.html"],
   ["/404", "dist/404.html"],
 ];
@@ -41,6 +44,35 @@ const inlineStyles = new Set();
 const scriptFiles = new Set();
 const inlineScripts = new Set();
 const pages = new Map();
+
+/* --- Images -------------------------------------------------------------
+   Astro's image pipeline emits real files under /_astro/ and points src and
+   srcset at them. Those URLs cannot resolve inside a single file, so every
+   referenced image is read off disk and swapped for a data URI. Without this
+   the preview shows the layout with every photograph broken, which reads as a
+   bug rather than as a hosting limitation. */
+const MIME = {
+  ".webp": "image/webp",
+  ".avif": "image/avif",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".svg": "image/svg+xml",
+};
+
+const dataUriCache = new Map();
+
+function inlineImages(html) {
+  return html.replace(/\/_astro\/[\w.-]+\.(webp|avif|png|jpe?g|svg)/g, (url) => {
+    if (dataUriCache.has(url)) return dataUriCache.get(url);
+    const file = join(DIST, url);
+    if (!existsSync(file)) return url;
+    const ext = url.slice(url.lastIndexOf("."));
+    const uri = `data:${MIME[ext] ?? "application/octet-stream"};base64,${readFileSync(file).toString("base64")}`;
+    dataUriCache.set(url, uri);
+    return uri;
+  });
+}
 
 for (const [route, file] of ROUTES) {
   if (!existsSync(file)) continue;
@@ -81,7 +113,7 @@ for (const [route, file] of ROUTES) {
   $("script").remove();
   pages.set(route, {
     title: $("title").text(),
-    body: $("body").html() ?? "",
+    body: inlineImages($("body").html() ?? ""),
   });
 }
 
@@ -113,14 +145,14 @@ const bundled = await build({
   minify: true,
   write: false,
   target: "es2022",
-  // Keeps everything, including the 3D island behind its dynamic import, in
-  // this one file. Nothing may be fetched at runtime.
+  // Keeps everything, including the animation layer behind its dynamic
+  // import, in this one file. Nothing may be fetched at runtime.
   splitting: false,
   legalComments: "none",
   /* Astro's preload helper resolves chunk URLs off import.meta, which has no
-     meaning in an IIFE. Left alone it throws inside the 3D island's dynamic
-     import, the mount's catch swallows it, and the page silently shows the
-     fallback forever. There are no separate chunks to preload here anyway. */
+     meaning in an IIFE. Left alone it throws inside the animation layer's
+     dynamic import, the catch swallows it, and every reveal stays at opacity
+     0 forever. There are no separate chunks to preload here anyway. */
   define: { "import.meta.url": '"https://preview.invalid/"' },
 });
 
@@ -194,8 +226,12 @@ home('meta[property^="og:"], meta[name^="twitter:"]').remove();
 
 home("head").append(`<style>${css}</style>`);
 
-const themeScript = readFileSync("src/lib/theme-script.js", "utf8")
-  .match(/themeInitScript = `([\s\S]*?)`;/)?.[1];
+/* Imported, not regex-scraped out of the source file. The exported string is
+   a template literal, so lifting its raw text gave a script that still read
+   `localStorage.getItem("${THEME_STORAGE_KEY}")` literally. That never throws
+   and always returns null, so the preview silently ignored the stored theme
+   and reset to dark on every load. */
+const themeScript = themeInitScript;
 
 const payload = JSON.stringify(Object.fromEntries(pages));
 
@@ -225,7 +261,11 @@ const html = process.env.FRAGMENT
     ].join("\n")
   : home.html();
 
-writeFileSync(OUT, html);
+/* One more pass over the assembled document. The shell is dist/index.html, so
+   its own body still carries the home page's markup with /_astro/ image URLs
+   in it, and only the routes stashed in __PAGES__ went through inlineImages
+   earlier. Running it over the whole output catches the shell as well. */
+writeFileSync(OUT, inlineImages(html));
 
 console.log(
   `\n  ${OUT}  ${(Buffer.byteLength(html) / 1024 / 1024).toFixed(2)} MB` +

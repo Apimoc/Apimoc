@@ -1,0 +1,405 @@
+---
+import { ui } from "../content/ui";
+
+interface Props {
+  /** Adds the two booking fields: what you need help with, and by when. */
+  consultation?: boolean;
+}
+
+const { consultation = false } = Astro.props;
+
+// Supplied as a Cloudflare Pages environment variable. Public by design: the
+// Turnstile SITE key belongs in the page. The SECRET key is read only inside
+// the Pages Function and never reaches the browser.
+const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY ?? "";
+---
+
+<form id="contact-form" class="form" novalidate data-consultation={consultation ? "true" : undefined}>
+  <h2 class="t-h3 form-title">{ui.contact.formHeading}</h2>
+
+  {/* Announced when validation fails. Focus moves here so a keyboard or
+      screen reader user is told what to fix. */}
+  <div class="errors" id="error-summary" role="alert" tabindex="-1" hidden>
+    <p class="t-caption">{ui.contact.errorSummaryHeading}</p>
+    <ul></ul>
+  </div>
+
+  <div class="field">
+    <label for="name">{ui.contact.nameLabel}</label>
+    <input id="name" name="name" type="text" autocomplete="name" required />
+    <p class="error" id="name-error" hidden></p>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label for="email">{ui.contact.emailLabel}</label>
+      <input id="email" name="email" type="email" autocomplete="email" required />
+      <p class="error" id="email-error" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for="phone">
+        {ui.contact.phoneLabel}
+        <span class="optional">{ui.contact.phoneOptional}</span>
+      </label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" />
+    </div>
+  </div>
+
+  {
+    consultation && (
+      <div class="row">
+        <div class="field">
+          <label for="enquiry-type">{ui.consultation.typeLabel}</label>
+          <select id="enquiry-type" name="enquiry_type">
+            <option>{ui.consultation.typeBuying}</option>
+            <option>{ui.consultation.typeSelling}</option>
+            <option>{ui.consultation.typeBoth}</option>
+            <option>{ui.consultation.typeOther}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="timeline">{ui.consultation.timelineLabel}</label>
+          <select id="timeline" name="timeline">
+            {ui.consultation.timelineOptions.map((option) => (
+              <option>{option}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    )
+  }
+
+  <div class="field">
+    <label for="message">{ui.contact.messageLabel}</label>
+    <textarea id="message" name="message" rows="6" required></textarea>
+    <p class="error" id="message-error" hidden></p>
+  </div>
+
+  {/* Honeypot. Hidden from sight AND from assistive technology, so no real
+      user is ever asked to skip it. */}
+  <div class="hp" aria-hidden="true">
+    <label for="company-website">{ui.contact.honeypotLabel}</label>
+    <input
+      id="company-website"
+      name="company_website"
+      type="text"
+      tabindex="-1"
+      autocomplete="off"
+    />
+  </div>
+
+  {turnstileSiteKey && (
+    <div class="cf-turnstile" data-sitekey={turnstileSiteKey} data-theme="auto"></div>
+  )}
+
+  <button
+    type="submit"
+    class="btn submit"
+    data-idle={ui.contact.submit}
+    data-busy={ui.contact.submitting}
+  >
+    {ui.contact.submit}
+  </button>
+
+  <div class="sent" id="sent" role="status" hidden>
+    <p class="t-h3 sent-title">{ui.contact.success.heading}</p>
+    <p>{ui.contact.success.body}</p>
+  </div>
+</form>
+
+{
+  turnstileSiteKey && (
+    <script
+      is:inline
+      async
+      defer
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+    />
+  )
+}
+
+<style>
+  .form {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .form-title {
+    text-transform: none;
+    margin: 0;
+  }
+
+  .row {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  /* Persistent visible labels. Placeholder-only labeling is a failure, so no
+     field here carries a placeholder attribute at all. */
+  label {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-caption);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--ink-muted);
+  }
+
+  .optional {
+    text-transform: none;
+    letter-spacing: 0;
+    margin-left: 0.5rem;
+    /* No opacity here: --ink-muted already sits near the AA floor, and
+       knocking it back would push it under. Anything that needs to recede
+       uses a token, not transparency. */
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    color: var(--ink);
+    background: var(--paper);
+    /* An operable boundary, so --line-ui rather than --rule: umber measures
+       1.49:1 on the dark ground and would fail the 3:1 requirement. */
+    border: var(--hairline) solid var(--line-ui);
+    padding: 0.7rem 0.8rem;
+    min-height: 48px;
+    width: 100%;
+    border-radius: 0;
+  }
+
+  textarea {
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--brass);
+    outline-offset: 2px;
+  }
+
+  input[aria-invalid="true"],
+  textarea[aria-invalid="true"] {
+    border-color: var(--brass);
+    border-width: 2px;
+  }
+
+  .error {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .error[hidden],
+  .errors[hidden],
+  .sent[hidden] {
+    display: none;
+  }
+
+  .errors {
+    border: var(--hairline) solid var(--line-ui);
+    padding: 1rem;
+  }
+
+  .errors p {
+    margin: 0 0 0.5rem;
+    color: var(--ink);
+  }
+
+  .errors ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.9375rem;
+  }
+
+  .hp {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .submit {
+    justify-self: start;
+  }
+
+  .submit[disabled] {
+    opacity: 0.6;
+    cursor: default;
+  }
+
+  .sent {
+    border-top: var(--hairline) solid var(--brass);
+    padding-top: 1.25rem;
+  }
+
+  .sent-title {
+    text-transform: none;
+    margin: 0 0 0.5rem;
+  }
+
+  .sent p {
+    margin: 0;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 40rem) {
+    .row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  import { ui } from "../content/ui";
+
+  interface FieldSpec {
+    id: string;
+    validate: (value: string) => string | null;
+  }
+
+  function wireForm() {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    if (!form) return;
+
+    const summary = document.getElementById("error-summary");
+    const summaryList = summary?.querySelector("ul");
+    const sent = document.getElementById("sent");
+    const submit = form.querySelector<HTMLButtonElement>(".submit");
+
+    const fields: FieldSpec[] = [
+      {
+        id: "name",
+        validate: (v) => (v.trim() ? null : ui.contact.errors.nameRequired),
+      },
+      {
+        id: "email",
+        validate: (v) => {
+          if (!v.trim()) return ui.contact.errors.emailRequired;
+          // Deliberately permissive. Server-side validation is the real gate.
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())
+            ? null
+            : ui.contact.errors.emailInvalid;
+        },
+      },
+      {
+        id: "message",
+        validate: (v) => {
+          const t = v.trim();
+          if (!t) return ui.contact.errors.messageRequired;
+          if (t.length < 20) return ui.contact.errors.messageTooShort;
+          if (t.length > 4000) return ui.contact.errors.messageTooLong;
+          return null;
+        },
+      },
+    ];
+
+    const showError = (id: string, message: string | null) => {
+      const input = document.getElementById(id) as HTMLInputElement | null;
+      const slot = document.getElementById(`${id}-error`);
+      if (!input || !slot) return;
+
+      if (message) {
+        slot.textContent = message;
+        slot.hidden = false;
+        input.setAttribute("aria-invalid", "true");
+        // Programmatically associated, so it is announced on focus.
+        input.setAttribute("aria-describedby", `${id}-error`);
+      } else {
+        slot.hidden = true;
+        slot.textContent = "";
+        input.removeAttribute("aria-invalid");
+        input.removeAttribute("aria-describedby");
+      }
+    };
+
+    const setSummary = (messages: { id: string; text: string }[]) => {
+      if (!summary || !summaryList) return;
+      summaryList.innerHTML = "";
+      messages.forEach(({ id, text }) => {
+        const li = document.createElement("li");
+        const link = document.createElement("a");
+        link.href = `#${id}`;
+        link.textContent = text;
+        li.appendChild(link);
+        summaryList.appendChild(li);
+      });
+      summary.hidden = messages.length === 0;
+      if (messages.length > 0) summary.focus();
+    };
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const problems: { id: string; text: string }[] = [];
+      fields.forEach(({ id, validate }) => {
+        const input = document.getElementById(id) as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | null;
+        const message = validate(input?.value ?? "");
+        showError(id, message);
+        if (message) problems.push({ id, text: message });
+      });
+
+      if (problems.length > 0) {
+        setSummary(problems);
+        return;
+      }
+      setSummary([]);
+
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = submit.dataset.busy ?? "";
+      }
+
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          body: new FormData(form),
+        });
+
+        if (response.ok) {
+          form.querySelectorAll("input, textarea").forEach((el) => {
+            (el as HTMLInputElement).value = "";
+          });
+          if (sent) sent.hidden = false;
+          if (submit) submit.hidden = true;
+          return;
+        }
+
+        const body = (await response.json().catch(() => ({}))) as {
+          error?: keyof typeof ui.contact.errors;
+        };
+        const key = body.error ?? "server";
+        setSummary([
+          { id: "message", text: ui.contact.errors[key] ?? ui.contact.errors.server },
+        ]);
+      } catch {
+        setSummary([{ id: "message", text: ui.contact.errors.network }]);
+      } finally {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = submit.dataset.idle ?? "";
+        }
+      }
+    });
+  }
+
+  // astro:page-load fires on the first load as well as after every view
+  // transition, so this is the only hook needed.
+  document.addEventListener("astro:page-load", wireForm);
+</script>

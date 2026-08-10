@@ -30,33 +30,23 @@ function readToken(scope: string, name: string): string {
   return match[1];
 }
 
-/* The 3D scene's material colours, read from the same stylesheet as
-   everything else so tokens.css stays the only place a colour is written. */
-const materials = (scope: string) => ({
-  brickBase: readToken(scope, "mat-brick"),
-  mortar: readToken(scope, "mat-mortar"),
-  stucco: readToken(scope, "mat-stucco"),
-  concrete: readToken(scope, "mat-concrete"),
-  roof: readToken(scope, "mat-roof"),
-  trim: readToken(scope, "mat-trim"),
-});
-
-export const lightTokens = {
+/* The site is dark by default, so :root holds the DARK values and the light
+   theme is the override. Naming them the other way round would read as a bug
+   the first time someone opened this file. */
+export const darkTokens = {
   paper: readToken(":root", "paper"),
   paperRaised: readToken(":root", "paper-raised"),
   ink: readToken(":root", "ink"),
   inkMuted: readToken(":root", "ink-muted"),
   brass: readToken(":root", "brass"),
   umber: readToken(":root", "umber"),
-  ...materials(":root"),
 } as const;
 
-export const darkTokens = {
-  paper: readToken('[data-theme="dark"]', "paper"),
-  paperRaised: readToken('[data-theme="dark"]', "paper-raised"),
-  ink: readToken('[data-theme="dark"]', "ink"),
-  inkMuted: readToken('[data-theme="dark"]', "ink-muted"),
-  brass: readToken('[data-theme="dark"]', "brass"),
-  umber: readToken('[data-theme="dark"]', "umber"),
-  ...materials('[data-theme="dark"]'),
+export const lightTokens = {
+  paper: readToken('[data-theme="light"]', "paper"),
+  paperRaised: readToken('[data-theme="light"]', "paper-raised"),
+  ink: readToken('[data-theme="light"]', "ink"),
+  inkMuted: readToken('[data-theme="light"]', "ink-muted"),
+  brass: readToken('[data-theme="light"]', "brass"),
+  umber: readToken('[data-theme="light"]', "umber"),
 } as const;

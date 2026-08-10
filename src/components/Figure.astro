@@ -1,0 +1,121 @@
+---
+import { Image } from "astro:assets";
+import { ui } from "../content/ui";
+
+interface Props {
+  /**
+   * Filename inside src/assets/, for example "portrait.jpg" or
+   * "listings/cherry-creek.jpg".
+   */
+  src?: string;
+  alt?: string;
+  /** Set false and the designed placeholder plate is shown instead. */
+  ready?: boolean;
+  /** Arched at the top, square at the base. The recurring shape here. */
+  arch?: boolean;
+  ratio?: string;
+  sizes?: string;
+  widths?: number[];
+  loading?: "eager" | "lazy";
+  /**
+   * Background images. Omits the "photo to come" label, because a caption
+   * floating behind a headline reads as a bug rather than as a placeholder.
+   */
+  quiet?: boolean;
+  class?: string;
+}
+
+const {
+  src,
+  alt = "",
+  ready = true,
+  arch = false,
+  ratio = "4 / 5",
+  sizes = "(min-width: 48rem) 32rem, 100vw",
+  widths = [320, 640, 960, 1280],
+  loading = "lazy",
+  quiet = false,
+  class: className,
+} = Astro.props;
+
+/**
+ * Every photograph on the site goes through here.
+ *
+ * One component means one place that knows about the arch shape, the aspect
+ * ratio and the placeholder. When a photo has not been supplied yet it draws
+ * a ruled plate at exactly the right shape, so the layout is already what it
+ * will be once the real file lands and nothing shifts when it does.
+ */
+
+// Discovered at build time, so a missing file is a designed state rather
+// than a 404. The glob has to be a static string for Vite to see it.
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/**/*.{jpg,jpeg,png,avif,webp}",
+);
+
+const key = src ? `/src/assets/${src}` : null;
+const loader = key ? images[key] : undefined;
+const resolved = ready && loader ? (await loader()).default : null;
+---
+
+<figure
+  class:list={["plate", arch && "arch", className]}
+  style={`--ratio:${ratio}`}
+>
+  {
+    resolved ? (
+      <Image
+        src={resolved}
+        alt={alt}
+        widths={widths}
+        sizes={sizes}
+        loading={loading}
+        decoding="async"
+      />
+    ) : (
+      <div
+        class:list={["pending", quiet && "quiet"]}
+        role={quiet ? undefined : "img"}
+        aria-label={quiet ? undefined : ui.placeholder.badge}
+        aria-hidden={quiet ? "true" : undefined}
+      >
+        {!quiet && <span class="t-caption">{ui.placeholder.badge}</span>}
+      </div>
+    )
+  }
+</figure>
+
+<style>
+  .plate {
+    margin: 0;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    background: var(--paper-raised);
+    position: relative;
+  }
+
+  .plate :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pending {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border: var(--hairline) solid var(--rule);
+    /* Follows the arch rather than drawing a square inside the curve. */
+    border-radius: inherit;
+    background: var(--paper-raised);
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .pending.quiet {
+    border: 0;
+    background: var(--paper-raised);
+  }
+</style>

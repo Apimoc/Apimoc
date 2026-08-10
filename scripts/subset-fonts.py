@@ -32,6 +32,7 @@ from fontTools.varLib.instancer import instantiateVariableFont
 
 OUT = Path("public/fonts")
 SRC = Path("node_modules/@fontsource-variable")
+STATIC = Path("node_modules/@fontsource")
 
 # Latin basic, the accented letters names actually need, plus the quotes,
 # dashes, arrow and middle dot the design sets.
@@ -75,6 +76,12 @@ JOBS = [
     (SRC / "literata/files/literata-latin-opsz-italic.woff2",
      "literata-latin-opsz-italic.woff2",
      {"wght": (400, 400, 700)}),
+
+    # Allura is a single static weight, used only for short accent phrases,
+    # so it has no axes to narrow. The character subset still helps.
+    (STATIC / "allura/files/allura-latin-400-normal.woff2",
+     "allura-latin-400-normal.woff2",
+     {}),
 ]
 
 

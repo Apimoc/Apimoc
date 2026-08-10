@@ -1,0 +1,76 @@
+---
+interface Props {
+  /** The script flourish above the heading. Two or three words. */
+  eyebrow?: string;
+  heading?: string;
+  standfirst?: string;
+  align?: "left" | "center";
+  /** Renders the heading as h1. Used on page headers, never in a band. */
+  level?: "h1" | "h2";
+  class?: string;
+}
+
+const {
+  eyebrow,
+  heading,
+  standfirst,
+  align = "center",
+  level = "h2",
+  class: className,
+} = Astro.props;
+
+/**
+ * The section header used everywhere: a script eyebrow, a wide-tracked
+ * display heading, and an optional line under it.
+ *
+ * One component means the vertical rhythm between eyebrow, heading and
+ * standfirst is set once. Per-section margins are how that rhythm drifts.
+ */
+---
+
+<header class:list={["head", align, className]}>
+  {eyebrow && <p class="t-script eyebrow" data-reveal="block">{eyebrow}</p>}
+  {
+    heading &&
+      (level === "h1" ? (
+        <h1 class="t-display" data-reveal="lines">{heading}</h1>
+      ) : (
+        <h2 class="t-h2" data-reveal="lines">{heading}</h2>
+      ))
+  }
+  {standfirst && (
+    <p class="standfirst" data-reveal="block">{standfirst}</p>
+  )}
+</header>
+
+<style>
+  .head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: clamp(2rem, 4vw, 3.25rem);
+  }
+
+  .head.center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .head.left {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  /* The script sits low and slightly overlapping the heading above it, the
+     way a handwritten note would. */
+  .eyebrow {
+    margin-bottom: -0.35rem;
+  }
+
+  .standfirst {
+    margin: 0.85rem 0 0;
+    max-width: 46ch;
+    color: var(--ink-muted);
+    font-size: 1.0625rem;
+  }
+</style>

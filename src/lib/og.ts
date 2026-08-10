@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import satori from "satori";
 import sharp from "sharp";
 import { lightTokens } from "./tokens";
-import { scenes } from "../content/scenes";
 
 /**
  * Build-time Open Graph images.
@@ -43,64 +42,30 @@ const el = (type: string, style: Record<string, unknown>, children?: unknown): N
   props: { style, ...(children === undefined ? {} : { children }) },
 });
 
-/** The cutaway, flattened into an elevation, carrying the site's signature
-    element into the card. */
-function building(): Node {
-  const { floors, unitsPerFloor } = scenes.home;
-
-  const rand = (n: number) => {
-    const x = Math.sin(n * 127.1) * 43758.5453;
-    return x - Math.floor(x);
-  };
-
-  const rows: Node[] = [];
-  let index = 0;
-
-  // Roof.
-  rows.push(
+/** The arch, the recurring shape of the design, drawn as a mark on the card
+    so a shared link is recognisably from this site. */
+function mark(): Node {
+  return el(
+    "div",
+    {
+      display: "flex",
+      width: 260,
+      height: 330,
+      borderRadius: "130px 130px 0 0",
+      border: `2px solid ${lightTokens.brass}`,
+      alignItems: "flex-end",
+      justifyContent: "center",
+      padding: 18,
+    },
     el("div", {
       display: "flex",
-      width: unitsPerFloor * 34 + 12,
-      height: 8,
-      backgroundColor: lightTokens.roof,
-      marginBottom: 2,
+      width: 196,
+      height: 210,
+      borderRadius: "98px 98px 0 0",
+      backgroundColor: lightTokens.brass,
+      opacity: 0.16,
     }),
   );
-
-  for (let floor = floors - 1; floor >= 0; floor -= 1) {
-    const units: Node[] = [];
-    for (let col = 0; col < unitsPerFloor; col += 1) {
-      const seed = floor * unitsPerFloor + col;
-      const bias = 1 - floor / (floors * 1.8);
-      const lit = rand(seed) < 0.78 * bias + 0.12;
-      units.push(
-        el("div", {
-          display: "flex",
-          width: 30,
-          height: 24,
-          marginRight: 4,
-          backgroundColor: lit ? lightTokens.brass : lightTokens.stucco,
-          border: `1px solid ${lit ? lightTokens.brass : lightTokens.concrete}`,
-          opacity: lit ? 0.92 : 0.55,
-        }),
-      );
-      index += 1;
-    }
-    rows.push(el("div", { display: "flex" }, units));
-    // Exposed floor slab, the thing that makes it read as a cutaway.
-    rows.push(
-      el("div", {
-        display: "flex",
-        width: unitsPerFloor * 34 + 6,
-        height: 4,
-        backgroundColor: lightTokens.concrete,
-        marginBottom: 3,
-      }),
-    );
-  }
-
-  void index;
-  return el("div", { display: "flex", flexDirection: "column" }, rows);
 }
 
 export interface OgOptions {
@@ -198,7 +163,7 @@ export async function renderOgImage(options: OgOptions): Promise<Buffer> {
       padding: 72,
       alignItems: "stretch",
     },
-    [left, el("div", { display: "flex", alignItems: "center" }, building())],
+    [left, el("div", { display: "flex", alignItems: "center" }, mark())],
   );
 
   const svg = await satori(tree as never, { width: 1200, height: 630, fonts });

@@ -16,12 +16,12 @@ const THEMES = ["light", "dark"];
 const ROUTES = [
   ["home", "/"],
   ["about", "/about"],
-  ["experience", "/experience"],
-  ["work", "/work"],
-  ["work-detail", "/work/case-study-one"],
-  ["credentials", "/credentials"],
-  ["journal", "/journal"],
-  ["journal-post", "/journal/first-post"],
+  ["services", "/services"],
+  ["listings", "/listings"],
+  ["listing-detail", "/listings/cherry-creek-townhome"],
+  ["consultation", "/consultation"],
+  ["blog", "/blog"],
+  ["blog-post", "/blog/what-your-offer-says"],
   ["contact", "/contact"],
   ["404", "/404"],
 ];
@@ -75,8 +75,8 @@ for (const theme of THEMES) {
       await page.mouse.wheel(0, -(height + 2000));
       await page.waitForTimeout(600);
 
-      // Let the reveals and the 3D island settle.
-      await page.waitForTimeout(2200);
+      // Let the reveals settle.
+      await page.waitForTimeout(1200);
       await page.screenshot({
         path: `${OUT}/${name}-${width}-${theme}.png`,
         fullPage: true,

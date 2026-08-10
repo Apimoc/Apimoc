@@ -1,7 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
 import { ui } from "../content/ui";
-import BuildingMount from "../components/BuildingMount.astro";
 
 /**
  * Designed, not default. It uses the same ruled language as the rest of the
@@ -11,9 +10,6 @@ import BuildingMount from "../components/BuildingMount.astro";
 
 <Base title={ui.notFound.heading} noindex>
   <section class="band notfound" aria-label={ui.notFound.heading}>
-    <div class="scene-slot">
-      <BuildingMount scene="notFound" size="banner" />
-    </div>
     <div class="shell copy">
       <p class="code t-figure">{ui.notFound.code}</p>
       <h1 class="t-display">{ui.notFound.heading}</h1>
@@ -32,9 +28,8 @@ import BuildingMount from "../components/BuildingMount.astro";
     padding-block: clamp(2rem, 7vw, 5rem);
   }
 
-  .scene-slot,
   .copy {
-    grid-area: 1 / 1;
+    position: relative;
   }
 
   .copy {
@@ -45,13 +40,6 @@ import BuildingMount from "../components/BuildingMount.astro";
 
   .copy :global(a) {
     pointer-events: auto;
-  }
-
-  @media (min-width: 48rem) {
-    .scene-slot {
-      justify-self: end;
-      width: 44%;
-    }
   }
 
   .code {

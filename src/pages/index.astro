@@ -1,39 +1,55 @@
 ---
 import { getCollection, render } from "astro:content";
 import Base from "../layouts/Base.astro";
-import Band from "../components/Band.astro";
-import RentRollStrip from "../components/RentRollStrip.astro";
-import CareerSpine from "../components/CareerSpine.astro";
-import CaseStudyList from "../components/CaseStudyList.astro";
-import BuildingMount from "../components/BuildingMount.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Pillars from "../components/Pillars.astro";
+import Figures from "../components/Figures.astro";
+import Figure from "../components/Figure.astro";
+import ListingCard from "../components/ListingCard.astro";
+import Testimonials from "../components/Testimonials.astro";
 import EmailLink from "../components/EmailLink.astro";
-import Portrait from "../components/Portrait.astro";
-import { activeHomeSections } from "../content/theme";
-import { identity, assets, contact, isPlaceholder } from "../content/site";
+import { activeHomeSections, listingsConfig } from "../content/theme";
+import { assets, identity, contact, isPlaceholder } from "../content/site";
 import { ui, fill } from "../content/ui";
+import { formatDateLong, isoDate } from "../lib/format";
 
 /**
- * The landing page introduces her. It is not a stat sheet: the unit counts,
- * the rent roll and the dated career rows all live on /experience, where
- * someone has already decided to look properly.
+ * The landing page, composed from the array in src/content/theme.ts.
+ * Reorder that array and the page reorders; disable an entry and the section
+ * disappears without leaving a gap, because every band owns its own spacing.
  *
- * Sections come from the array in src/content/theme.ts. Reorder that array
- * and this page reorders; disable an entry and it disappears without leaving
- * a gap, because every band owns its own spacing and rule.
+ * Each section's words live in its own file under src/content/home/.
  */
 
 const sections = await getCollection("home");
-const bySection = new Map(sections.map((entry) => [entry.data.section, entry]));
+const by = new Map(sections.map((entry) => [entry.data.section, entry]));
 
-const hero = bySection.get("hero");
-const rentRoll = bySection.get("rentRoll");
-const aboutEntry = bySection.get("about");
-const contactEntry = bySection.get("contact");
+const hero = by.get("hero");
+const pillars = by.get("pillars");
+const about = by.get("about");
+const panels = by.get("panels");
+const figures = by.get("figures");
+const guidebook = by.get("guidebook");
+const listingsIntro = by.get("listings");
+const whyWork = by.get("whyWorkWithMe");
+const testimonialsIntro = by.get("testimonials");
+const blogIntro = by.get("blog");
+const cta = by.get("cta");
 
-const AboutBody = aboutEntry ? (await render(aboutEntry)).Content : null;
-const ContactBody = contactEntry ? (await render(contactEntry)).Content : null;
+const AboutBody = about ? (await render(about)).Content : null;
+const GuidebookBody = guidebook ? (await render(guidebook)).Content : null;
+const CtaBody = cta ? (await render(cta)).Content : null;
 
-const ctaName = isPlaceholder(identity.shortName) ? "" : identity.shortName;
+const featured = (await getCollection("listings", ({ data }) => !data.draft))
+  .filter((l) => l.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, listingsConfig.featuredOnHome);
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime())
+  .slice(0, listingsConfig.postsOnHome);
+
+const shortName = isPlaceholder(identity.shortName) ? "" : identity.shortName;
 const hasEmail = !isPlaceholder(contact.emailUser);
 ---
 
@@ -43,95 +59,278 @@ const hasEmail = !isPlaceholder(contact.emailUser);
       switch (section.id) {
         /* ---------------------------------------------------------------
            HERO
-           The building sits behind the type rather than beside it, so the
-           first thing on screen is a piece of architecture. The LCP element
-           is still the headline text, never the canvas.
+           A full-bleed photograph, the name in script, the headline in wide
+           display caps, and an arched portrait alongside. The LCP element is
+           the headline text.
            --------------------------------------------------------------- */
         case "hero":
           return (
-            <section class="hero" aria-label={hero?.data.headline ?? undefined}>
-              <div class="hero-scene">
-                <BuildingMount scene="home" size="hero" />
+            <section class="hero" aria-label={hero?.data.heading}>
+              <div class="hero-bg">
+                <Figure
+                  src="hero.jpg"
+                  alt={assets.heroAlt}
+                  ready={assets.heroReady}
+                  quiet
+                  ratio="16 / 9"
+                  loading="eager"
+                  widths={[768, 1280, 1920]}
+                  sizes="100vw"
+                  class="hero-photo"
+                />
+                <div class="scrim"></div>
               </div>
 
-              <div class="shell hero-copy">
-                <h1 class="t-display headline" data-reveal="lines">
-                  {hero?.data.headline}
-                </h1>
-                {hero?.data.standfirst && (
-                  <p class="standfirst" data-reveal="block">
-                    {hero.data.standfirst}
-                  </p>
-                )}
-
-                <div class="cta" data-reveal="block">
-                  {hasEmail && (
-                    <EmailLink
-                      class="button primary"
-                      label={fill(ui.cta.email, { NAME: ctaName }).trim()}
-                    />
+              <div class="shell hero-inner">
+                <div class="hero-copy">
+                  {hero?.data.eyebrow && (
+                    <p class="t-script name">{hero.data.eyebrow}</p>
                   )}
-                  <a class="button" href="/experience">{ui.cta.fullCv}</a>
+                  <h1 class="t-display headline" data-reveal="lines">
+                    {hero?.data.heading}
+                  </h1>
+                  <div class="hero-actions" data-reveal="block">
+                    {hero?.data.ctaLabel && (
+                      <a class="btn" href={hero.data.ctaHref ?? "/listings"}>
+                        {hero.data.ctaLabel}
+                      </a>
+                    )}
+                    {hero?.data.scrollHint && (
+                      <p class="scroll-hint t-caption">{hero.data.scrollHint}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div class="hero-portrait" data-reveal="block">
+                  <Figure
+                    src="portrait.jpg"
+                    alt={assets.portraitAlt}
+                    ready={assets.portraitReady}
+                    arch
+                    ratio="4 / 5"
+                    loading="eager"
+                    sizes="(min-width: 62rem) 26rem, 70vw"
+                  />
                 </div>
               </div>
             </section>
           );
 
-        case "rentRoll":
+        /* This band carries no visible heading by design, so the card titles
+           are the first level under the h1 and must be h2. Passing level 3
+           here is what made the document skip from h1 to h3. */
+        case "pillars":
           return (
-            <Band label={ui.rentRoll.regionLabel}>
-              <RentRollStrip
-                figures={rentRoll?.data.figures ?? []}
-                note={rentRoll?.data.figuresNote}
-              />
-            </Band>
+            <section class="band band-sunken" aria-label={ui.home.pillarsLabel}>
+              <div class="shell">
+                <Pillars items={pillars?.data.pillars ?? []} level={2} />
+              </div>
+            </section>
           );
 
-        case "careerSpine":
-          return (
-            <Band heading={section.heading}>
-              <CareerSpine limit={3} />
-              <p class="more">
-                <a href="/experience">{ui.cta.fullCv}</a>
-              </p>
-            </Band>
-          );
-
-        case "caseStudies":
-          return (
-            <Band heading={section.heading}>
-              <CaseStudyList limit={3} />
-              <p class="more">
-                <a href="/work">{ui.cta.allCaseStudies}</a>
-              </p>
-            </Band>
-          );
-
+        /* ---------------------------------------------------------------
+           ABOUT
+           Arched portrait on the left, script eyebrow and heading on the
+           right, signed off in the script face.
+           --------------------------------------------------------------- */
         case "about":
           return (
-            <Band heading={section.heading}>
-              <div class="about">
-                <Portrait />
-                <div class="about-copy measure" data-reveal="block">
-                  {AboutBody && <AboutBody />}
+            <section class="band" aria-label={about?.data.heading}>
+              <div class="shell about">
+                <div class="about-photo" data-reveal="block">
+                  <Figure
+                    src="portrait.jpg"
+                    alt={assets.portraitAlt}
+                    ready={assets.portraitReady}
+                    arch
+                    ratio="4 / 5"
+                    sizes="(min-width: 48rem) 24rem, 80vw"
+                  />
+                </div>
+                <div class="about-copy">
+                  <SectionHead
+                    eyebrow={about?.data.eyebrow}
+                    heading={about?.data.heading}
+                    align="left"
+                  />
+                  <div class="prose-block" data-reveal="block">
+                    {AboutBody && <AboutBody />}
+                  </div>
+                  {about?.data.signature && (
+                    <p class="t-script signature">{about.data.signature}</p>
+                  )}
                   <p class="more">
-                    <a href="/about">{ui.cta.moreAbout}</a>
+                    <a href="/about">{ui.cta.moreAboutMe}</a>
                   </p>
                 </div>
               </div>
-            </Band>
+            </section>
           );
 
-        case "contact":
+        case "panels":
           return (
-            <Band heading={section.heading}>
-              <div class="measure" data-reveal="block">
-                {ContactBody && <ContactBody />}
-                <p class="more">
-                  <a href="/contact">{fill(ui.cta.email, { NAME: ctaName }).trim()}</a>
+            <section class="band" aria-label={panels?.data.section}>
+              <div class="shell panels" data-reveal="rows">
+                {(panels?.data.panels ?? []).map((panel) => (
+                  <article class="card panel">
+                    <h2 class="t-h3 panel-title">{panel.title}</h2>
+                    <p class="panel-body">{panel.body}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+          );
+
+        case "figures":
+          return (
+            <section class="band" aria-label={figures?.data.heading}>
+              <div class="shell">
+                <SectionHead heading={figures?.data.heading} />
+                <Figures items={figures?.data.figures ?? []} />
+                <p class="center-cta">
+                  <a class="btn" href="/about">{ui.cta.moreAboutMe}</a>
                 </p>
               </div>
-            </Band>
+            </section>
+          );
+
+        /* ---------------------------------------------------------------
+           GUIDEBOOK
+           The lead magnet: copy on the left, the cover on the right.
+           --------------------------------------------------------------- */
+        case "guidebook":
+          return (
+            <section class="band band-raised" aria-label={guidebook?.data.heading}>
+              <div class="shell guidebook">
+                <div class="guidebook-copy">
+                  <SectionHead
+                    eyebrow={guidebook?.data.eyebrow}
+                    heading={guidebook?.data.heading}
+                    align="left"
+                  />
+                  <div class="prose-block" data-reveal="block">
+                    {GuidebookBody && <GuidebookBody />}
+                  </div>
+                  {guidebook?.data.ctaLabel && (
+                    <p class="more-btn" data-reveal="block">
+                      <a class="btn" href={guidebook.data.ctaHref ?? "/contact"}>
+                        {guidebook.data.ctaLabel}
+                      </a>
+                    </p>
+                  )}
+                </div>
+                <div class="guidebook-cover" data-reveal="block">
+                  <Figure
+                    src="guidebook.jpg"
+                    alt={assets.guidebookAlt}
+                    ready={assets.guidebookReady}
+                    ratio="3 / 4"
+                    sizes="(min-width: 48rem) 20rem, 60vw"
+                  />
+                </div>
+              </div>
+            </section>
+          );
+
+        case "listings":
+          return (
+            <section class="band" aria-label={listingsIntro?.data.heading}>
+              <div class="shell">
+                <SectionHead
+                  eyebrow={listingsIntro?.data.eyebrow}
+                  heading={listingsIntro?.data.heading}
+                />
+                <div class="listing-grid" data-reveal="rows">
+                  {featured.map((listing) => (
+                    <ListingCard listing={listing} />
+                  ))}
+                </div>
+                <p class="center-cta">
+                  <a class="btn btn-ghost" href="/listings">
+                    {ui.cta.viewAllListings}
+                  </a>
+                </p>
+              </div>
+            </section>
+          );
+
+        case "whyWorkWithMe":
+          return (
+            <section class="band band-sunken" aria-label={whyWork?.data.heading}>
+              <div class="shell">
+                <SectionHead heading={whyWork?.data.heading} />
+                <Pillars items={whyWork?.data.pillars ?? []} numbered />
+              </div>
+            </section>
+          );
+
+        case "testimonials":
+          return (
+            <section class="band" aria-label={ui.testimonials.regionLabel}>
+              <div class="shell">
+                <SectionHead
+                  eyebrow={testimonialsIntro?.data.eyebrow}
+                  heading={testimonialsIntro?.data.heading}
+                />
+                <Testimonials limit={4} />
+              </div>
+            </section>
+          );
+
+        case "blog":
+          return (
+            <section class="band" aria-label={blogIntro?.data.heading}>
+              <div class="shell">
+                <SectionHead
+                  eyebrow={blogIntro?.data.eyebrow}
+                  heading={blogIntro?.data.heading}
+                />
+                <div class="post-grid" data-reveal="rows">
+                  {posts.map((post) => (
+                    <article class="post">
+                      <a class="post-hit" href={`/blog/${post.id}`}>
+                        <time class="t-caption" datetime={isoDate(post.data.pubDate)}>
+                          {formatDateLong(post.data.pubDate)}
+                        </time>
+                        <h3 class="t-h3 post-title">{post.data.title}</h3>
+                        <p class="post-desc">{post.data.description}</p>
+                      </a>
+                    </article>
+                  ))}
+                </div>
+                <p class="center-cta">
+                  <a class="btn btn-ghost" href="/blog">{ui.cta.readAllPosts}</a>
+                </p>
+              </div>
+            </section>
+          );
+
+        case "cta":
+          return (
+            <section class="band band-raised" aria-label={cta?.data.heading}>
+              <div class="shell closing">
+                <SectionHead
+                  eyebrow={cta?.data.eyebrow}
+                  heading={cta?.data.heading}
+                />
+                <div class="closing-copy" data-reveal="block">
+                  {CtaBody && <CtaBody />}
+                </div>
+                <div class="closing-actions" data-reveal="block">
+                  {cta?.data.ctaLabel && (
+                    <a class="btn" href={cta.data.ctaHref ?? "/consultation"}>
+                      {cta.data.ctaLabel}
+                    </a>
+                  )}
+                  {hasEmail && (
+                    <EmailLink
+                      class="btn btn-ghost"
+                      label={fill(ui.cta.emailMe, { NAME: shortName }).trim()}
+                    />
+                  )}
+                </div>
+              </div>
+            </section>
           );
 
         default:
@@ -142,99 +341,125 @@ const hasEmail = !isPlaceholder(contact.emailUser);
 </Base>
 
 <style>
-  /* The scene and the copy share one grid cell, so the type sits over the
-     architecture without either being positioned absolutely against the
-     other. */
+  /* --- Hero --------------------------------------------------------------- */
   .hero {
+    position: relative;
+    isolation: isolate;
     display: grid;
-    align-items: center;
-    padding-block: clamp(1rem, 4vw, 3rem) clamp(2rem, 6vw, 4rem);
+    align-items: end;
+    min-height: min(88vh, 54rem);
+    padding-block: clamp(3rem, 8vw, 6rem) clamp(2rem, 5vw, 4rem);
+    overflow: hidden;
   }
 
-  /* On a phone the two stack: copy first, then the building. Overlaying a
-     headline on a moving building is unreadable at 390px and no amount of
-     scrim fixes it. From tablet up they become side-by-side columns. */
-  .hero {
-    grid-template-columns: minmax(0, 1fr);
-    gap: clamp(1.5rem, 5vw, 2.5rem);
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
   }
 
-  .hero-copy {
-    order: 1;
-  }
-
-  .hero-scene {
-    order: 2;
+  .hero-bg :global(.hero-photo) {
     width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
   }
 
-  /* Only the actual controls take pointer events back, so the building never
-     eats a click or a swipe. */
-  .hero-copy :global(a) {
-    pointer-events: auto;
+  .hero-bg :global(.hero-photo img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* The scrim is what keeps the headline readable over any photograph, and
+     it is a token so it tracks the theme rather than being a fixed black. */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      var(--paper) 0%,
+      var(--scrim) 55%,
+      transparent 100%
+    );
+  }
+
+  .hero-inner {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3rem);
+    align-items: center;
+  }
+
+  .name {
+    margin-bottom: 0.25rem;
   }
 
   .headline {
-    max-width: 16ch;
+    /* Sized to the column rather than to the page, because a single long
+       word (EXTRAORDINARY) cannot wrap and will overrun a max-width that
+       was set in characters. */
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    max-width: 14ch;
+    overflow-wrap: break-word;
+    hyphens: auto;
   }
 
-  .standfirst {
-    margin: 1.75rem 0 0;
-    max-width: 34ch;
-    font-size: 1.125rem;
-    color: var(--ink-muted);
-  }
-
-  .cta {
+  .hero-actions {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2.25rem;
-  }
-
-  /* Ruled rectangles, consistent with everything else. No radius, no shadow,
-     no gradient. */
-  .cta :global(.button) {
-    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-height: 48px;
-    padding: 0 1.4rem;
-    border: var(--hairline) solid var(--line-ui);
-    background: color-mix(in oklab, var(--paper) 82%, transparent);
-    color: var(--ink);
-    text-decoration: none;
-    font-size: var(--text-caption);
-    letter-spacing: var(--tracking-caption);
-    text-transform: uppercase;
-    font-weight: 500;
-    backdrop-filter: blur(4px);
-    transition:
-      background-color 0.18s var(--ease-out),
-      color 0.18s var(--ease-out);
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
   }
 
-  .cta :global(.button.primary) {
+  .scroll-hint {
+    margin: 0;
+    position: relative;
+    padding-left: 2.25rem;
+  }
+
+  /* A small ruled arrow rather than an animated mouse graphic. */
+  .scroll-hint::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 1.5rem;
+    height: 1px;
     background: var(--brass);
-    border-color: var(--brass);
-    color: var(--paper);
   }
 
-  .cta :global(.button:hover) {
-    opacity: 1;
-    background: var(--ink);
-    border-color: var(--ink);
-    color: var(--paper);
+  .hero-portrait {
+    max-width: 26rem;
+    width: 100%;
+    justify-self: center;
   }
 
+  /* --- About -------------------------------------------------------------- */
   .about {
     display: grid;
-    gap: 2rem;
-    align-items: start;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: center;
   }
 
-  .about-copy :global(p) {
-    margin: 0 0 1.15rem;
+  .about-photo {
+    max-width: 24rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .prose-block :global(p) {
+    margin: 0 0 1.1rem;
+    color: var(--ink-muted);
+    max-width: 52ch;
+  }
+
+  .prose-block :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .signature {
+    margin: 1.25rem 0 0;
+    font-size: 2rem;
   }
 
   .more {
@@ -247,37 +472,150 @@ const hasEmail = !isPlaceholder(contact.emailUser);
 
   .more :global(a) {
     text-decoration: none;
-    pointer-events: auto;
   }
 
   .more :global(a::after) {
     content: " →";
   }
 
+  /* --- Panels ------------------------------------------------------------- */
+  .panels {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .panel-title {
+    text-transform: none;
+    font-size: 1.5rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .panel-body {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+
+  /* --- Shared ------------------------------------------------------------- */
+  .center-cta {
+    margin: clamp(2rem, 4vw, 3rem) 0 0;
+    text-align: center;
+  }
+
+  .more-btn {
+    margin: 1.75rem 0 0;
+  }
+
+  /* --- Guidebook ---------------------------------------------------------- */
+  .guidebook {
+    display: grid;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: center;
+  }
+
+  .guidebook-cover {
+    max-width: 20rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  /* --- Listings and posts -------------------------------------------------- */
+  .listing-grid,
+  .post-grid {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .post {
+    border-top: var(--hairline) solid var(--rule);
+  }
+
+  .post-hit {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .post-title {
+    margin: 0;
+    text-transform: none;
+    transition: color 0.18s var(--ease-out);
+  }
+
+  .post-hit:hover .post-title {
+    color: var(--brass);
+  }
+
+  .post-desc {
+    margin: 0;
+    color: var(--ink-muted);
+    font-size: 0.9375rem;
+  }
+
+  /* --- Closing ------------------------------------------------------------- */
+  .closing {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .closing-copy :global(p) {
+    margin: 0;
+    color: var(--ink-muted);
+    max-width: 48ch;
+  }
+
+  .closing-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 62rem) {
+    .hero-inner {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    }
+
+    .hero-portrait {
+      justify-self: end;
+    }
+  }
+
   @media (min-width: 48rem) {
     .about {
-      grid-template-columns: 14rem 1fr;
-      gap: 3rem;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     }
 
-    /* Two real columns. The type never crosses the building. */
-    .hero {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      align-items: center;
-      gap: clamp(1rem, 4vw, 3rem);
+    .about-photo {
+      justify-self: start;
     }
 
-    .hero-copy {
-      grid-area: 1 / 1;
+    .panels {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .hero-scene {
-      grid-area: 1 / 2;
-      justify-self: stretch;
+    .guidebook {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
     }
 
-    .headline {
-      max-width: 14ch;
+    .guidebook-cover {
+      justify-self: end;
+    }
+
+    .listing-grid,
+    .post-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-title {
+      transition: none;
     }
   }
 </style>
